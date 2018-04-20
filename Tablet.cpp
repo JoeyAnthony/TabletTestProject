@@ -1,8 +1,8 @@
+#include "stdafx.h"
 #include "Tablet.h"
 
 using namespace vrlib::tien;
 
+Tablet::Tablet(components::Transform& leftHand, components::Transform& rightHand) : Node("Tablet",nullptr) {
 
-/*Tablet::Tablet(components::Transform& leftHand, components::Transform& rightHand) : Node("Tablet",nullptr) {
-
-}*/
+}
