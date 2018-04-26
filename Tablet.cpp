@@ -3,8 +3,8 @@
 
 #include <VrLib\tien\components\TransformAttach.h>
 
-//using namespace vrlib;
-//using namespace vrlib::tien;
+using namespace vrlib;
+using namespace vrlib::tien;
 //
 //Tablet::Tablet(PositionalDevice& leftHand, PositionalDevice& rightHand) {
 //	

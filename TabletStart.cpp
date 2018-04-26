@@ -42,7 +42,7 @@ void TabletStart::loadScene()
 {
 	Engine.scene.reset();
 
-	std::ifstream str = std::ifstream("data/TabletWorld/TabletWorld.json");
+	std::ifstream str = std::ifstream("../Development/Applications/TabletTestProject/data/Scenes/TabletWorld.json");
 	json scene = json::parse(str);
 	Engine.scene.fromJson(scene["scene"], scene, [](auto) {return nullptr; });
 
