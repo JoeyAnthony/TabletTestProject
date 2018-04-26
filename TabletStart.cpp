@@ -13,23 +13,24 @@ using namespace vrlib::tien;
 void TabletStart::init()
 {
 	logger << "Initialized" << logger.newline;
-	vive.init();
+	//vive.init();
 	Engine.init();
 
 	loadScene();
 
 	Engine.start();
-
+	
 	
 }
 
 void TabletStart::preFrame(double frameTime, double totalTime)
 {
-	Engine.update(frameTime);
+	Engine.update((float)frameTime / 1000.0f);
 }
 
 void TabletStart::latePreFrame()
 {
+
 }
 
 void TabletStart::draw(const glm::mat4 & projectionMatrix, const glm::mat4 & modelViewMatrix)
