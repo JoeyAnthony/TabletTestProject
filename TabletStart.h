@@ -4,13 +4,14 @@
 #include <VrLib\HtcVive.h>
 #include <VrLib\Device.h>
 #include <glm\glm.hpp>
+#include "HandController.h"
 
 class TabletStart : public vrlib::Application
 {
-	//vrlib::DigitalDevice leftbutton;
 private:
 	vrlib::Vive vive;
 	vrlib::tien::Tien Engine;
+	HandController* hand;
 
 public:
 	virtual void init() override;

@@ -3,9 +3,11 @@
 #include <VrLib\Log.h>
 #include <VrLib\json.hpp>
 #include <fstream>
+#include <VrLib\Device.h>
 
 #include <VrLib\tien\components\TransformAttach.h>
 #include <VrLib\tien\components\ModelRenderer.h>
+
 
 using vrlib::logger;
 using namespace vrlib::tien;
@@ -13,14 +15,12 @@ using namespace vrlib::tien;
 void TabletStart::init()
 {
 	logger << "Initialized" << logger.newline;
-	//vive.init();
+	vive.init();
 	Engine.init();
 
 	loadScene();
 
 	Engine.start();
-	
-	
 }
 
 void TabletStart::preFrame(double frameTime, double totalTime)
@@ -36,6 +36,7 @@ void TabletStart::latePreFrame()
 void TabletStart::draw(const glm::mat4 & projectionMatrix, const glm::mat4 & modelViewMatrix)
 {
 	Engine.render(projectionMatrix, modelViewMatrix);
+	hand->drawRay(modelViewMatrix, projectionMatrix);
 }
 
 void TabletStart::loadScene()
@@ -46,10 +47,14 @@ void TabletStart::loadScene()
 	json scene = json::parse(str);
 	Engine.scene.fromJson(scene["scene"], scene, [](auto) {return nullptr; });
 
+	hand = new HandController(vive.controllers[1]);
+
 	Node* rightHand = new Node("RightHand", &Engine.scene);
 	rightHand->addComponent(new components::Transform(glm::vec3(-2, 0, 0)));
-	rightHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
 	rightHand->addComponent(new components::TransformAttach(vive.controllers[1].transform));
+	rightHand->addComponent(hand);
+	rightHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
+
 }
 
 

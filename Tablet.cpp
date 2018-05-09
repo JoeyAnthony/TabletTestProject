@@ -5,19 +5,19 @@
 
 using namespace vrlib;
 using namespace vrlib::tien;
-//
-//Tablet::Tablet(PositionalDevice& leftHand, PositionalDevice& rightHand) {
-//	
-//}
-//
-//void Tablet::update(float elapsedTime, Scene& scene) {
-//
-//}
-//
-//void Tablet::drawDeferredPass() {
-//
-//}
-//
-//void Tablet::postUpdate(Scene& scene) {
-//
-//}
+
+Tablet::Tablet(PositionalDevice& leftHand, PositionalDevice& rightHand) {
+	
+}
+
+void Tablet::update(float elapsedTime, Scene& scene) {
+
+}
+
+void Tablet::drawDeferredPass() {
+
+}
+
+void Tablet::postUpdate(Scene& scene) {
+
+}
