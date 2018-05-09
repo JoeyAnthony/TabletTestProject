@@ -55,8 +55,13 @@ void HandController::drawRay(glm::mat4 view, glm::mat4 proj)
 	glLineWidth(10.0f);
 
 	glm::vec3 rayOrigin{node->transform->transform * glm::vec4(0, 0, 0, 1)};
-	glm::vec3 rayFront{ node->transform->transform * glm::vec4(0, 0, -1, 1) };
-	glm::vec3 rayTarget{ rayOrigin + glm::normalize(rayFront - rayOrigin) * 20.f };
+	glm::mat4 rotmat = glm::rotate(node->transform->transform, glm::radians(-60.f), glm::vec3(1, 0, 0));
+	glm::vec3 rayFront{rotmat * glm::vec4(0, 0, -1, 1)};
+	glm::vec3 rayDir = glm::vec3(rayFront - rayOrigin);
+	//glm::vec3 rayDir = glm::vec3(glm::vec4(glm::normalize(rayFront - rayOrigin), 1.f) * glm::rotate(glm::mat4(), -45.f, glm::vec3(1, 0, 0)));
+
+
+	glm::vec3 rayTarget{ rayOrigin + rayDir * 20.f };
 	glBegin(GL_LINES);
 	glColor3f(0, 0, 1);
 	glVertex3fv(glm::value_ptr(rayOrigin));
