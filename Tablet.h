@@ -27,7 +27,7 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 	vrlib::gl::FBO fbo;
 	FboToTexture fboTexture;
 
-	void clear(glm::vec4 clearColor = {});
+	void clear(glm::vec4 clearColor = {0,0,0,1});
 public:
 	
 

@@ -62,10 +62,35 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 
 	float intersectionDistance;
 	bool intersectSucces = intersectRayPlane(pointerPos, pointerDir, {}, { 0,0,-1 }, intersectionDistance);
+	intersectionDistance *= -1;
 	if (intersectSucces == false) return;
-	std::cout << "intersection distance" << intersectionDistance;
+	std::cout << "intersection distance" << intersectionDistance << std::endl;
+	clear();
 
+	// DRAW 
+	{
+		int viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
+		fbo.bind();
 
+		glMatrixMode(GL_PROJECTION);
+		glLoadMatrixf(value_ptr(mat4()));
+		glMatrixMode(GL_MODELVIEW);
+		glLoadMatrixf(value_ptr(mat4()));
+		glUseProgram(0);
+		glDisable(GL_TEXTURE_2D);
+		glColor4f(0, 0, 0, 1);
+		glLineWidth(10.f);
+		glBegin(GL_LINES);
+		glColor3f(1, 0, 0);
+		glVertex3fv(value_ptr(vec3(0, 0, 0)));
+		glVertex3fv(value_ptr(vec3(0.5f, 0.5f, 0)));
+		glEnd();
+
+		fbo.unbind();
+		glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	}
 
 
 		//covert pointer to local space
