@@ -61,15 +61,50 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 
 	// Calculate screen pos
 	const mat4 toTabletSpaceMat = inverse(node->transform->transform);
-	const vec3 pointerPos = vec3(toTabletSpaceMat * (vec4(0, 0, 0, 1) * m_pointer.getData()));
-	const vec3 pointerFront = vec3(toTabletSpaceMat * (vec4(0, 0, -1, 1) * m_pointer.getData()));
+	const vec3 pointerPos = vec3(toTabletSpaceMat * (m_pointer.getData() * vec4(0, 0, 0, 1)));
+	const vec3 pointerFront = vec3(toTabletSpaceMat * (m_pointer.getData() * vec4(0, 0, -1, 1)));
 	const vec3 pointerDir = pointerPos - pointerFront;
+
+	auto wp_pointerpos =  m_pointer.getData() *  vec4(0, 0, 0, 1);
+	auto wp_pointerfront = m_pointer.getData() * vec4(0, 0, -1, 1);
+
+	//std::cout << "wp_pointerpos (" << wp_pointerpos.x << "," << wp_pointerpos.y << "," << wp_pointerpos.z << ")"  << std::endl;
+	//std::cout << "wp_pointerfront (" << wp_pointerfront.x << "," << wp_pointerfront.y << "," << wp_pointerfront.z << ")" << std::endl;
+	std::cout << "pointerPos (" << pointerPos.x << "," << pointerPos.y << "," << pointerPos.z << ")" << std::endl;
+	//std::cout << "pointerFront (" << pointerFront.x << "," << pointerFront.y << "," << pointerFront.z << ")" << std::endl;
+	//std::cout << "dirmag " << length(pointerDir) << std::endl;
+	std::cout << "pointerDir (" << pointerDir.x << "," << pointerDir.y << "," << pointerDir.z << ")" << std::endl;
+
+
+	
+
+	
 
 	float intersectionDistance;
 	bool intersectSucces = intersectRayPlane(pointerPos, pointerDir, {}, { 0,0,-1 }, intersectionDistance);
 	intersectionDistance *= -1;
 	if (intersectSucces == false) return;
 	std::cout << "intersection distance" << intersectionDistance << std::endl;
+
+	auto intercectionpos = pointerPos + -intersectionDistance * pointerDir;
+
+	mat4 planePosToPixelCoordMat{resx/size,0,0,0,
+								 0,(resy/ withToHeightRatio)/size,0,0,
+								 0,0,0,0,
+								 resx/2.f,resy/2.f,0,0 };
+
+	std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
+
+	intercectionpos = vec3(planePosToPixelCoordMat * vec4(intercectionpos, 1));
+
+	std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
+
+	m_screenPos = min(max(vec2(intercectionpos), { 0,0 }), { resx,resy });
+	m_screenPosInBounds = vec2(intercectionpos) == m_screenPos;
+	std::cout << "pos in bounds " << m_screenPosInBounds;
+
+	std::cout << std::endl;
+
 	clear();
 
 	// DRAW 
@@ -90,9 +125,23 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 		glColor4f(0, 0, 0, 1);
 		glLineWidth(10.f);
 		glBegin(GL_LINES);
+
 		glColor3f(1, 0, 0);
 		glVertex3fv(value_ptr(vec3(0, 0, 0)));
+		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+
+		glColor3f(0, 1, 0);
+		glVertex3fv(value_ptr(vec3(resx, 0, 0)));
+		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+
+		glColor3f(0, 0, 1);
+		glVertex3fv(value_ptr(vec3(0, resy, 0)));
+		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+
+		glColor3f(1, 1, 1);
 		glVertex3fv(value_ptr(vec3(resx, resy, 0)));
+		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+
 		glEnd();
 
 		fbo.unbind();

@@ -35,7 +35,7 @@ public:
 
 	static constexpr int resx = 600, resy = 800;
 	static constexpr float withToHeightRatio = ((float)resy) / resx;
-	static constexpr float size = 1;
+	static constexpr float size = 0.5f;
 
 	Tablet(const vrlib::PositionalDevice& pointer);
 
