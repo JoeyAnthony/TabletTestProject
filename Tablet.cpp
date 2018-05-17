@@ -36,6 +36,11 @@ Tablet::Tablet(const PositionalDevice& pointer) : m_pointer(pointer), fbo(resx, 
 	indices.push_back(0);
 	indices.push_back(2);
 	indices.push_back(3);
+
+	pixelToTexCoordMat = { (1.f / resx) * 2,0,0,0,
+							0,(1.f / resy) * 2,0,0,
+							0,0,1,0,
+							-1,-1,0,1 };
 }
 
 void Tablet::clear(vec4 clearColor) {
@@ -74,10 +79,12 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 		glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
 		fbo.bind();
 
+		
+
 		glMatrixMode(GL_PROJECTION);
 		glLoadMatrixf(value_ptr(mat4()));
 		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(value_ptr(mat4()));
+		glLoadMatrixf(value_ptr(pixelToTexCoordMat));
 		glUseProgram(0);
 		glDisable(GL_TEXTURE_2D);
 		glColor4f(0, 0, 0, 1);
@@ -85,7 +92,7 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 		glBegin(GL_LINES);
 		glColor3f(1, 0, 0);
 		glVertex3fv(value_ptr(vec3(0, 0, 0)));
-		glVertex3fv(value_ptr(vec3(0.5f, 0.5f, 0)));
+		glVertex3fv(value_ptr(vec3(resx, resy, 0)));
 		glEnd();
 
 		fbo.unbind();
