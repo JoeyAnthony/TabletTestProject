@@ -14,20 +14,19 @@ void HandController::update(float elapsedTime, Scene & scene)
 
 #ifdef WIN32
 
-	glm::mat4 mat = node->transform->transform;
-	glm::vec3 pos = node->transform->position;
+	auto& pos = node->transform->getGlobalPosition();
 	if (GetAsyncKeyState('I'))
-		node->transform->transform = glm::translate(mat, pos + glm::vec3(0, 0, -1) * elapsedTime);
+		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, -1) * elapsedTime);
 	if (GetAsyncKeyState('K'))
-		node->transform->transform = glm::translate(mat, pos + glm::vec3(0, 0, 1) * elapsedTime);
+		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, 1) * elapsedTime);
 	if (GetAsyncKeyState('L'))
-		node->transform->transform = glm::translate(mat, pos + glm::vec3(1, 0, 0) * elapsedTime);
+		node->transform->setGlobalPosition(pos + glm::vec3(1, 0, 0) * elapsedTime);
 	if (GetAsyncKeyState('J'))
-		node->transform->transform = glm::translate(mat, pos + glm::vec3(-1, 0, 0) * elapsedTime);
+		node->transform->setGlobalPosition(pos + glm::vec3(-1, 0, 0) * elapsedTime);
 	if (GetAsyncKeyState('U'))
-		node->transform->transform = glm::translate(mat, pos + glm::vec3(0, 1, 0) * elapsedTime);
+		node->transform->setGlobalPosition(pos + glm::vec3(0, 1, 0) * elapsedTime);
 	if (GetAsyncKeyState('N'))
-		node->transform->transform = glm::translate(mat, pos + glm::vec3(0, -1, 0) * elapsedTime);
+		node->transform->setGlobalPosition(pos + glm::vec3(0, -1, 0) * elapsedTime);
 
 	
 #endif		
