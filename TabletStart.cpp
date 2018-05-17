@@ -52,16 +52,18 @@ void TabletStart::loadScene()
 	hand = new HandController(vive.controllers[1]);
 
 	Node* rightHand = new Node("RightHand", &Engine.scene);
-	rightHand->addComponent(new components::Transform(glm::vec3(-2, 0, 0)));
+	rightHand->addComponent(new components::Transform(glm::vec3(2, 0, 0)));
 	rightHand->addComponent(new components::TransformAttach(vive.controllers[1].transform));
 	rightHand->addComponent(hand);
 	rightHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
-
+	
 	Node* leftHand = new Node("LeftHand", &Engine.scene);
-	rightHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
-	rightHand->addComponent(new Tablet(vive.controllers[1].transform));
-
-
+	leftHand->addComponent(new components::Transform(glm::vec3(-2, 0, 0)));
+	leftHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
+	Tablet* tablet = new Tablet(vive.controllers[1].transform);
+	leftHand->addComponent(tablet);
+	leftHand->addComponent(new components::MeshRenderer(tablet));
+	leftHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
 }
 
 
