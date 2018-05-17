@@ -12,29 +12,27 @@ using namespace vrlib::tien;
 void HandController::update(float elapsedTime, Scene & scene)
 {
 
-#ifdef WIN32
-
-	auto& pos = node->transform->getGlobalPosition();
-	if (GetAsyncKeyState('I'))
-		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, -1) * elapsedTime);
-	if (GetAsyncKeyState('K'))
-		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, 1) * elapsedTime);
-	if (GetAsyncKeyState('L'))
-		node->transform->setGlobalPosition(pos + glm::vec3(1, 0, 0) * elapsedTime);
-	if (GetAsyncKeyState('J'))
-		node->transform->setGlobalPosition(pos + glm::vec3(-1, 0, 0) * elapsedTime);
-	if (GetAsyncKeyState('U'))
-		node->transform->setGlobalPosition(pos + glm::vec3(0, 1, 0) * elapsedTime);
-	if (GetAsyncKeyState('N'))
-		node->transform->setGlobalPosition(pos + glm::vec3(0, -1, 0) * elapsedTime);
-
-	
-#endif		
+//#ifdef WIN32
+//
+//	auto pos = node->transform->getGlobalPosition();
+//	if (GetAsyncKeyState('I'))
+//		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, -1) * elapsedTime);
+//	if (GetAsyncKeyState('K'))
+//		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, 1) * elapsedTime);
+//	if (GetAsyncKeyState('L'))
+//		node->transform->setGlobalPosition(pos + glm::vec3(1, 0, 0) * elapsedTime);
+//	if (GetAsyncKeyState('J'))
+//		node->transform->setGlobalPosition(pos + glm::vec3(-1, 0, 0) * elapsedTime);
+//	if (GetAsyncKeyState('U'))
+//		node->transform->setGlobalPosition(pos + glm::vec3(0, 1, 0) * elapsedTime);
+//	if (GetAsyncKeyState('N'))
+//		node->transform->setGlobalPosition(pos + glm::vec3(0, -1, 0) * elapsedTime);
+//
+//	
+//#endif		
 
 	//node->transform->transform = glm::rotate(node->transform->transform, 3.f * elapsedTime, glm::vec3(0, 1, 0));
 }
-
-
 
 
 void HandController::postUpdate(Scene & scene)
@@ -81,7 +79,6 @@ void HandController::drawDeferredPass() {
 	//glVertex3f(pos.x, pos.y, pos.z);
 	//glEnd();
 	//use classic opengl to render the pointer line from the hands if it's teleporting
-
 }
 
 

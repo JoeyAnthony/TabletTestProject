@@ -8,6 +8,8 @@
 #include <VrLib\tien\components\TransformAttach.h>
 #include <VrLib\tien\components\ModelRenderer.h>
 
+#include "Tablet.h"
+
 
 using vrlib::logger;
 using namespace vrlib::tien;
@@ -54,6 +56,11 @@ void TabletStart::loadScene()
 	rightHand->addComponent(new components::TransformAttach(vive.controllers[1].transform));
 	rightHand->addComponent(hand);
 	rightHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
+
+	Node* leftHand = new Node("LeftHand", &Engine.scene);
+	rightHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
+	rightHand->addComponent(new Tablet(vive.controllers[1].transform));
+
 
 }
 

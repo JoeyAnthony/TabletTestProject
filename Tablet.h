@@ -11,6 +11,8 @@ public:
 
 	void update(float elapsedTime, vrlib::tien::Scene& scene) override;
 	void drawDeferredPass() override;
+	void drawForwardPass() override {};
+	void drawShadowMap() override {};
 	void postUpdate(vrlib::tien::Scene& scene) override;
 
 private:
