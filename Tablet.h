@@ -7,9 +7,15 @@
 class Tablet : public vrlib::tien::components::Renderable {
 public:
 
-	Tablet(vrlib::PositionalDevice& leftHand, vrlib::PositionalDevice& rightHand);
+	Tablet(const vrlib::PositionalDevice& pointer);
 
 	void update(float elapsedTime, vrlib::tien::Scene& scene) override;
 	void drawDeferredPass() override;
 	void postUpdate(vrlib::tien::Scene& scene) override;
+
+private:
+	const vrlib::PositionalDevice& m_pointer;
+	
+	glm::vec2 m_screenPos;
+	bool m_screenPosInBounds;
 };
