@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Tablet.h"
 
-#include <VrLib\tien\components\TransformAttach.h>
 #include <glm\gtx\intersect.hpp>
 
 using namespace vrlib;
@@ -10,25 +9,56 @@ using namespace glm;
 using vrlib::gl::FBO;
 using std::make_unique;
 
-Tablet::Tablet(const PositionalDevice& pointer) : m_pointer(pointer), fbo(resx, resy), fboTexture(&fbo) {	
-	material.texture = &fboTexture;
+Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer) :
+	m_resolution(resolution), m_size(size), m_withToHeightRatio(((float)m_resolution.y) / m_resolution.x),
+	m_pointer(pointer), m_fbo(m_resolution.x, m_resolution.y), m_fboTexture(&m_fbo), 
+	
+	// We construct a matrix to convert our plane coordinates to pixel coordinates
+	// Syntax: [a,b] is the inclusive range between a and b. '=>' is the transformation we want. 'f' is the function that does the conversion
+	// x | [ -0.5 * size, 0.5 * size] => [0, resolution.x] | f(x) = x * (resolution.x / size) + resolution.x/2
+	// Same for y, but there the ratio is also a factor
+	// y | [ -0.5 * size * ratio, 0.5 * size * ratio] => [0, resolution.y] | f(y) = y * ((resolution.y / size) / ratio) + resolution.y/2 
+	m_planePosToPixelCoordMat(m_resolution.x / m_size, 0, 0, 0,
+							  0, (m_resolution.y / m_withToHeightRatio) / m_size, 0, 0,
+							  0, 0, 0, 0,
+							  m_resolution.x / 2.f, m_resolution.y / 2.f, 0, 0),
+
+	// We contruct a matrix to convert our pixel coordinates to the fbo's texture coordinates
+	// x | [0, resolution.x] => [-1, 1] | f(x) = x * (1/resolution.x) * 2 - 1
+	// y | [0, resolution.y] => [-1, 1] | f(y) = y * (1/resolution.y) * 2 - 1
+	m_pixelToTexCoordMat( (1.f / m_resolution.x) * 2,0,0,0,
+						  0,(1.f / m_resolution.y) * 2,0,0,
+						  0,0,1,0,
+						  -1,-1,0,1 )
+	{
+	
+	// We setup the fbo as the mesh's texture
+	material.texture = &m_fboTexture;
 	material.normalmap = nullptr;
 
-	clear({ 1,0,0,1 });
+	// We clear the fbo
+	clear();
 
+
+	// We settup the mesh
+	// @NOTE: this has mostly been copied from NetworkEngine/PanelComponent.cpp/PanelComponent::PanelComponent(...)
+
+	// Setup Normal, tangent, and bi-tangent
 	vrlib::gl::VertexP3N2B2T2T2 v;
 	vrlib::gl::setN3(v, glm::vec3(0, 0, 1));
 	vrlib::gl::setTan3(v, glm::vec3(1, 0, 0));
 	vrlib::gl::setBiTan3(v, glm::vec3(0, 1, 0));
 
-	vec2 sizevec{ size, size * withToHeightRatio };
+	// We create a vector with the plane / mesh's x and y size
+	vec2 sizevec{ m_size, m_size * m_withToHeightRatio };
 
-
+	// We create the plane's four vertecies
 	vrlib::gl::setP3(v, glm::vec3(-sizevec.x / 2.0f, -sizevec.y / 2.0f, 0));			vrlib::gl::setT2(v, glm::vec2(0, 0));			vertices.push_back(v);
 	vrlib::gl::setP3(v, glm::vec3(sizevec.x / 2.0f, -sizevec.y / 2.0f, 0));			vrlib::gl::setT2(v, glm::vec2(1, 0));			vertices.push_back(v);
 	vrlib::gl::setP3(v, glm::vec3(sizevec.x / 2.0f, sizevec.y / 2.0f, 0));			vrlib::gl::setT2(v, glm::vec2(1, 1));			vertices.push_back(v);
 	vrlib::gl::setP3(v, glm::vec3(-sizevec.x / 2.0f, sizevec.y / 2.0f, 0));			vrlib::gl::setT2(v, glm::vec2(0, 1));			vertices.push_back(v);
 
+	// We create the mesh from the indicies by forming two triangles from the 4 vertecies
 	indices.push_back(0);
 	indices.push_back(1);
 	indices.push_back(2);
@@ -36,124 +66,103 @@ Tablet::Tablet(const PositionalDevice& pointer) : m_pointer(pointer), fbo(resx, 
 	indices.push_back(0);
 	indices.push_back(2);
 	indices.push_back(3);
-
-	pixelToTexCoordMat = { (1.f / resx) * 2,0,0,0,
-							0,(1.f / resy) * 2,0,0,
-							0,0,1,0,
-							-1,-1,0,1 };
 }
 
 void Tablet::clear(vec4 clearColor) {
+
+	// Setup the fbo as a render target
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
-	fbo.bind();
+	glViewport(0, 0, m_fbo.getWidth(), m_fbo.getHeight());
+	m_fbo.bind();
+
+	// We clear the fbo with the given clear color ( default = {0,0,0,1} )
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT);
-	fbo.unbind();
+
+	// Remove the fbo as render target
+	m_fbo.unbind();
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
-void Tablet::update(float elapsedTime, Scene& scene) {
+void Tablet::updateInput() {
+
+	// We set the input values to valid values, so if we have to abort these are guaranteed to be acceptable
 	m_screenPos = { 0,0 };
 	m_screenPosInBounds = false;
 	if (node == nullptr) return;
 
-	// Calculate screen pos
+	// We take the inverse of our transfrom to convert the 'pointer' position to tablet space
 	const mat4 toTabletSpaceMat = inverse(node->transform->transform);
+
+	// We get the position and front of the 'pointer' and convert them to tablet space
 	const vec3 pointerPos = vec3(toTabletSpaceMat * (m_pointer.getData() * vec4(0, 0, 0, 1)));
 	const vec3 pointerFront = vec3(toTabletSpaceMat * (m_pointer.getData() * vec4(0, 0, -1, 1)));
 	const vec3 pointerDir = pointerPos - pointerFront;
 
-	auto wp_pointerpos =  m_pointer.getData() *  vec4(0, 0, 0, 1);
-	auto wp_pointerfront = m_pointer.getData() * vec4(0, 0, -1, 1);
-
-	//std::cout << "wp_pointerpos (" << wp_pointerpos.x << "," << wp_pointerpos.y << "," << wp_pointerpos.z << ")"  << std::endl;
-	//std::cout << "wp_pointerfront (" << wp_pointerfront.x << "," << wp_pointerfront.y << "," << wp_pointerfront.z << ")" << std::endl;
-	std::cout << "pointerPos (" << pointerPos.x << "," << pointerPos.y << "," << pointerPos.z << ")" << std::endl;
-	//std::cout << "pointerFront (" << pointerFront.x << "," << pointerFront.y << "," << pointerFront.z << ")" << std::endl;
-	//std::cout << "dirmag " << length(pointerDir) << std::endl;
-	std::cout << "pointerDir (" << pointerDir.x << "," << pointerDir.y << "," << pointerDir.z << ")" << std::endl;
-
-
-	
-
-	
-
+	// We use a ray plane intersect to calculate our intersection point
+	// @TODO: replace with TIEN's comperable code (Math plane.rayIntersect)
 	float intersectionDistance;
 	bool intersectSucces = intersectRayPlane(pointerPos, pointerDir, {}, { 0,0,-1 }, intersectionDistance);
-	intersectionDistance *= -1;
 	if (intersectSucces == false) return;
-	std::cout << "intersection distance" << intersectionDistance << std::endl;
+	auto intercectionPosition = pointerPos + intersectionDistance * pointerDir;
 
-	auto intercectionpos = pointerPos + -intersectionDistance * pointerDir;
+	// We convert our intersection point to pixel cordinates
+	ivec2 intercectionPosition2{ m_planePosToPixelCoordMat * vec4(intercectionPosition, 1) };
 
-	mat4 planePosToPixelCoordMat{resx/size,0,0,0,
-								 0,(resy/ withToHeightRatio)/size,0,0,
-								 0,0,0,0,
-								 resx/2.f,resy/2.f,0,0 };
+	// We set the screen pos and do bounds checks, we also indicate wether the intersection point was within the bounds
+	m_screenPos = min(max(ivec2(intercectionPosition2), { 0,0 }), m_resolution);
+	m_screenPosInBounds = ivec2(intercectionPosition2) == m_screenPos;
+}
 
-	std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
-
-	intercectionpos = vec3(planePosToPixelCoordMat * vec4(intercectionpos, 1));
-
-	std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
-
-	m_screenPos = min(max(vec2(intercectionpos), { 0,0 }), { resx,resy });
-	m_screenPosInBounds = vec2(intercectionpos) == m_screenPos;
-	std::cout << "pos in bounds " << m_screenPosInBounds;
-
-	std::cout << std::endl;
-
+void Tablet::updateScreen() {
 	clear();
 
-	// DRAW 
-	{
-		int viewport[4];
-		glGetIntegerv(GL_VIEWPORT, viewport);
-		glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
-		fbo.bind();
+	// Setup the fbo as a render target
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glViewport(0, 0, m_fbo.getWidth(), m_fbo.getHeight());
+	m_fbo.bind();
 
-		
+	// Setup to allow easy graphics code in app
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(value_ptr(mat4())); // empty matrix wil not alter the positions
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(value_ptr(m_pixelToTexCoordMat)); // this matrix wil convert pixel coordinates to texture coordinates
+	glUseProgram(0);
+	glDisable(GL_TEXTURE_2D);
 
-		glMatrixMode(GL_PROJECTION);
-		glLoadMatrixf(value_ptr(mat4()));
-		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(value_ptr(pixelToTexCoordMat));
-		glUseProgram(0);
-		glDisable(GL_TEXTURE_2D);
-		glColor4f(0, 0, 0, 1);
-		glLineWidth(10.f);
-		glBegin(GL_LINES);
+	// @TODO: replace these draw calls with app draw code
+	glColor4f(0, 0, 0, 1);
+	glLineWidth(10.f);
+	glBegin(GL_LINES);
 
-		glColor3f(1, 0, 0);
-		glVertex3fv(value_ptr(vec3(0, 0, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+	glColor3f(1, 0, 0);
+	glVertex3fv(value_ptr(vec3(0, 0, 0)));
+	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
 
-		glColor3f(0, 1, 0);
-		glVertex3fv(value_ptr(vec3(resx, 0, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+	glColor3f(0, 1, 0);
+	glVertex3fv(value_ptr(vec3(m_resolution.x, 0, 0)));
+	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
 
-		glColor3f(0, 0, 1);
-		glVertex3fv(value_ptr(vec3(0, resy, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+	glColor3f(0, 0, 1);
+	glVertex3fv(value_ptr(vec3(0, m_resolution.y, 0)));
+	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
 
-		glColor3f(1, 1, 1);
-		glVertex3fv(value_ptr(vec3(resx, resy, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
+	glColor3f(1, 1, 1);
+	glVertex3fv(value_ptr(vec3(m_resolution.x, m_resolution.y, 0)));
+	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
 
-		glEnd();
+	glEnd();
 
-		fbo.unbind();
-		glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-	}
+	// Remove the fbo as render target
+	m_fbo.unbind();
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+}
 
-
-		//covert pointer to local space
-		//do a vector plane intersect
-		//update screen pos
-
-	//Handle App
+void Tablet::update(float elapsedTime, Scene& scene) {
+	updateInput();
+	updateScreen();
 }
 
 void Tablet::postUpdate(Scene& scene) {
