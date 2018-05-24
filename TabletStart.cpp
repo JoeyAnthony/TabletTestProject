@@ -9,6 +9,7 @@
 #include <VrLib\tien\components\ModelRenderer.h>
 
 #include "Tablet.h"
+#include "MainApp.h"
 
 
 using vrlib::logger;
@@ -60,7 +61,7 @@ void TabletStart::loadScene()
 	Node* leftHand = new Node("LeftHand", &Engine.scene);
 	leftHand->addComponent(new components::Transform(glm::vec3(-2, 0, 0)));
 	leftHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
-	Tablet* tablet = new Tablet({ 1920,1080 },1, vive.controllers[1].transform);
+	Tablet* tablet = new Tablet({ 1920,1080 }, 1, vive.controllers[1].transform, {new MainApp()});
 	leftHand->addComponent(tablet);
 	leftHand->addComponent(new components::MeshRenderer(tablet));
 	leftHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
@@ -72,7 +73,6 @@ TabletStart::TabletStart()
 {
 	clearColor = glm::vec4(0.2, 0.5, 0.4, 1.0);
 }
-
 
 TabletStart::~TabletStart()
 {

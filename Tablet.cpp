@@ -8,8 +8,9 @@ using namespace vrlib::tien;
 using namespace glm;
 using vrlib::gl::FBO;
 using std::make_unique;
+using std::initializer_list;
 
-Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer) :
+Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer, initializer_list<TabletApp*> apps) :
 	m_resolution(resolution), m_size(size), m_withToHeightRatio(((float)m_resolution.y) / m_resolution.x),
 	m_pointer(pointer), m_fbo(m_resolution.x, m_resolution.y), m_fboTexture(&m_fbo), 
 	
@@ -29,7 +30,8 @@ Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer) :
 	m_pixelToTexCoordMat( (1.f / m_resolution.x) * 2,0,0,0,
 						  0,(1.f / m_resolution.y) * 2,0,0,
 						  0,0,1,0,
-						  -1,-1,0,1 )
+						  -1,-1,0,1 ),
+	apps(apps)
 	{
 	
 	// We setup the fbo as the mesh's texture
@@ -66,6 +68,21 @@ Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer) :
 	indices.push_back(0);
 	indices.push_back(2);
 	indices.push_back(3);
+
+	// We check apps, and ensure proper initialization
+	if (apps.size() == 0) throw "you need to pass at leat one app";
+	for (auto& app : this->apps) {
+		app->tablet = this;
+		app->position = { 0,0 };
+		app->size = m_resolution;
+		app->initalize();
+	}
+
+	for (auto& app : this->apps) 
+		app->linkToApps();
+
+	activeApp = this->apps[0];
+	activeApp->onActivation();
 }
 
 void Tablet::clear(vec4 clearColor) {
@@ -115,6 +132,56 @@ void Tablet::updateInput() {
 	m_screenPosInBounds = ivec2(intercectionPosition2) == m_screenPos;
 }
 
+void Tablet::updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, ivec2 mousePos, bool inBounds, TabletGraphicsObject::SettingsStore settings) {
+	mousePos -= obj->position;
+	inBounds = inBounds ? mousePos.x >= 0 && mousePos.x < obj->size.x && mousePos.y >= 0 && mousePos.y < obj->size.y : false;
+	for (int i = 0; i < TabletGraphicsObject::DummyLast; ++i)
+		settings[i] = settings[i] & obj->settings[i];
+
+	if (settings[TabletGraphicsObject::Active] && obj->settings[TabletGraphicsObject::Updateable]) obj->update(deltaMs);
+	if (settings[TabletGraphicsObject::Active] && obj->settings[TabletGraphicsObject::Hoverable]) {
+		if (obj->hadHover && !inBounds) {
+			obj->onMouseLeave();
+		}
+		else if (!obj->hadHover && inBounds) {
+			obj->onMouseEnter();
+		}
+		obj->hadHover = inBounds;
+	}
+	else if (obj->hadHover) {
+		obj->onMouseLeave();
+		obj->hadHover = false;
+	}
+
+	// Clickable stuff
+
+	for (auto& child : obj->children)
+		updateGraphicsObject(child, deltaMs, mousePos, inBounds, settings);
+}
+
+void Tablet::updateApps(float deltaMs) {
+	updateGraphicsObject(activeApp, deltaMs, m_screenPos, m_screenPosInBounds, activeApp->settings);
+	for (auto& app : apps)
+		if (app != activeApp)
+			app->updateInactive(deltaMs);
+}
+
+void Tablet::drawGraphicsObject(TabletGraphicsObject* obj, glm::mat4 transform) {
+	if (obj->settings[TabletGraphicsObject::Visable] == false) return;
+	
+	transform[3][0] += obj->position.x;
+	transform[3][1] += obj->position.y;
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(value_ptr(transform));
+
+	obj->draw();
+
+	for (auto child : obj->children)
+		if (child->settings[TabletGraphicsObject::Visable])
+			drawGraphicsObject(child, transform);
+}
+
 void Tablet::updateScreen() {
 	clear();
 
@@ -126,34 +193,14 @@ void Tablet::updateScreen() {
 
 	// Setup to allow easy graphics code in app
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(value_ptr(mat4())); // empty matrix wil not alter the positions
-	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(value_ptr(m_pixelToTexCoordMat)); // this matrix wil convert pixel coordinates to texture coordinates
 	glUseProgram(0);
 	glDisable(GL_TEXTURE_2D);
 
-	// @TODO: replace these draw calls with app draw code
-	glColor4f(0, 0, 0, 1);
-	glLineWidth(10.f);
-	glBegin(GL_LINES);
-
-	glColor3f(1, 0, 0);
-	glVertex3fv(value_ptr(vec3(0, 0, 0)));
-	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-	glColor3f(0, 1, 0);
-	glVertex3fv(value_ptr(vec3(m_resolution.x, 0, 0)));
-	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-	glColor3f(0, 0, 1);
-	glVertex3fv(value_ptr(vec3(0, m_resolution.y, 0)));
-	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-	glColor3f(1, 1, 1);
-	glVertex3fv(value_ptr(vec3(m_resolution.x, m_resolution.y, 0)));
-	glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-	glEnd();
+	drawGraphicsObject(activeApp, { 1,0,0,0,
+								    0,1,0,0,
+								    0,0,0,0,
+								    0,0,0,1 });
 
 	// Remove the fbo as render target
 	m_fbo.unbind();
@@ -162,9 +209,16 @@ void Tablet::updateScreen() {
 
 void Tablet::update(float elapsedTime, Scene& scene) {
 	updateInput();
+	updateApps(elapsedTime);
 	updateScreen();
 }
 
 void Tablet::postUpdate(Scene& scene) {
 	
+}
+
+void Tablet::setActiveApp(TabletApp* app) {
+	activeApp->onDeactivation();
+	activeApp = app;
+	activeApp->onActivation();
 }
