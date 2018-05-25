@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CameraApp.h" />
     <ClInclude Include="HandController.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Tablet.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraApp.cpp" />
     <ClCompile Include="HandController.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

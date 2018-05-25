@@ -10,7 +10,7 @@ using namespace glm;
 using vrlib::gl::FBO;
 using std::make_unique;
 
-Tablet::Tablet(const PositionalDevice& pointer) : m_pointer(pointer), fbo(resx, resy), fboTexture(&fbo) {	
+Tablet::Tablet(const PositionalDevice& pointer, CameraApp* capp) : camapp(capp), m_pointer(pointer), fbo(capp->fbo), fboTexture(capp->fbo) {
 	material.texture = &fboTexture;
 	material.normalmap = nullptr;
 
@@ -43,18 +43,22 @@ Tablet::Tablet(const PositionalDevice& pointer) : m_pointer(pointer), fbo(resx, 
 							-1,-1,0,1 };
 }
 
+
+
 void Tablet::clear(vec4 clearColor) {
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
-	fbo.bind();
+	glViewport(0, 0, fbo->getWidth(), fbo->getHeight());
+	fbo->bind();
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT);
-	fbo.unbind();
+	fbo->unbind();
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 void Tablet::update(float elapsedTime, Scene& scene) {
+	camapp->update();
+
 	m_screenPos = { 0,0 };
 	m_screenPosInBounds = false;
 	if (node == nullptr) return;
@@ -70,10 +74,10 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 
 	//std::cout << "wp_pointerpos (" << wp_pointerpos.x << "," << wp_pointerpos.y << "," << wp_pointerpos.z << ")"  << std::endl;
 	//std::cout << "wp_pointerfront (" << wp_pointerfront.x << "," << wp_pointerfront.y << "," << wp_pointerfront.z << ")" << std::endl;
-	std::cout << "pointerPos (" << pointerPos.x << "," << pointerPos.y << "," << pointerPos.z << ")" << std::endl;
+	//std::cout << "pointerPos (" << pointerPos.x << "," << pointerPos.y << "," << pointerPos.z << ")" << std::endl;
 	//std::cout << "pointerFront (" << pointerFront.x << "," << pointerFront.y << "," << pointerFront.z << ")" << std::endl;
 	//std::cout << "dirmag " << length(pointerDir) << std::endl;
-	std::cout << "pointerDir (" << pointerDir.x << "," << pointerDir.y << "," << pointerDir.z << ")" << std::endl;
+	//std::cout << "pointerDir (" << pointerDir.x << "," << pointerDir.y << "," << pointerDir.z << ")" << std::endl;
 
 
 	
@@ -84,7 +88,7 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 	bool intersectSucces = intersectRayPlane(pointerPos, pointerDir, {}, { 0,0,-1 }, intersectionDistance);
 	intersectionDistance *= -1;
 	if (intersectSucces == false) return;
-	std::cout << "intersection distance" << intersectionDistance << std::endl;
+	//std::cout << "intersection distance" << intersectionDistance << std::endl;
 
 	auto intercectionpos = pointerPos + -intersectionDistance * pointerDir;
 
@@ -93,60 +97,19 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 								 0,0,0,0,
 								 resx/2.f,resy/2.f,0,0 };
 
-	std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
+	//std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
 
 	intercectionpos = vec3(planePosToPixelCoordMat * vec4(intercectionpos, 1));
 
-	std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
+	//std::cout << "interctpoint (" << intercectionpos.x << "," << intercectionpos.y << "," << intercectionpos.z << ")" << std::endl;
 
 	m_screenPos = min(max(vec2(intercectionpos), { 0,0 }), { resx,resy });
 	m_screenPosInBounds = vec2(intercectionpos) == m_screenPos;
-	std::cout << "pos in bounds " << m_screenPosInBounds;
+	//std::cout << "pos in bounds " << m_screenPosInBounds;
 
 	std::cout << std::endl;
 
-	clear();
-
-	// DRAW 
-	{
-		int viewport[4];
-		glGetIntegerv(GL_VIEWPORT, viewport);
-		glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
-		fbo.bind();
-
-		
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadMatrixf(value_ptr(mat4()));
-		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(value_ptr(pixelToTexCoordMat));
-		glUseProgram(0);
-		glDisable(GL_TEXTURE_2D);
-		glColor4f(0, 0, 0, 1);
-		glLineWidth(10.f);
-		glBegin(GL_LINES);
-
-		glColor3f(1, 0, 0);
-		glVertex3fv(value_ptr(vec3(0, 0, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-		glColor3f(0, 1, 0);
-		glVertex3fv(value_ptr(vec3(resx, 0, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-		glColor3f(0, 0, 1);
-		glVertex3fv(value_ptr(vec3(0, resy, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-		glColor3f(1, 1, 1);
-		glVertex3fv(value_ptr(vec3(resx, resy, 0)));
-		glVertex3fv(value_ptr(vec3(m_screenPos, 0)));
-
-		glEnd();
-
-		fbo.unbind();
-		glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-	}
+	//clear();
 
 
 		//covert pointer to local space

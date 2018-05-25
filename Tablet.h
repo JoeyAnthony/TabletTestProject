@@ -7,6 +7,7 @@
 #include <VrLib\Texture.h>
 #include <VrLib\gl\FBO.h>
 #include <memory>
+#include "CameraApp.h"
 
 class Tablet : public vrlib::tien::Component, public vrlib::tien::components::MeshRenderer::Mesh {
 	class FboToTexture : public vrlib::Texture
@@ -24,20 +25,19 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 
 	};
 
-	vrlib::gl::FBO fbo;
+	CameraApp* camapp;
+	vrlib::gl::FBO* fbo;
 	FboToTexture fboTexture;
 
 	glm::mat4 pixelToTexCoordMat;
 
 	void clear(glm::vec4 clearColor = {0,0,0,1});
 public:
-	
-
-	static constexpr int resx = 600, resy = 800;
+	static constexpr int resx = 1080, resy = 1920;
 	static constexpr float withToHeightRatio = ((float)resy) / resx;
 	static constexpr float size = 0.5f;
 
-	Tablet(const vrlib::PositionalDevice& pointer);
+	Tablet(const vrlib::PositionalDevice& pointer, CameraApp* capp);
 
 	void update(float elapsedTime, vrlib::tien::Scene& scene) override;
 	void postUpdate(vrlib::tien::Scene& scene) override;

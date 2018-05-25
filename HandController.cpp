@@ -12,26 +12,7 @@ using namespace vrlib::tien;
 void HandController::update(float elapsedTime, Scene & scene)
 {
 
-//#ifdef WIN32
-//
-//	auto pos = node->transform->getGlobalPosition();
-//	if (GetAsyncKeyState('I'))
-//		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, -1) * elapsedTime);
-//	if (GetAsyncKeyState('K'))
-//		node->transform->setGlobalPosition(pos + glm::vec3(0, 0, 1) * elapsedTime);
-//	if (GetAsyncKeyState('L'))
-//		node->transform->setGlobalPosition(pos + glm::vec3(1, 0, 0) * elapsedTime);
-//	if (GetAsyncKeyState('J'))
-//		node->transform->setGlobalPosition(pos + glm::vec3(-1, 0, 0) * elapsedTime);
-//	if (GetAsyncKeyState('U'))
-//		node->transform->setGlobalPosition(pos + glm::vec3(0, 1, 0) * elapsedTime);
-//	if (GetAsyncKeyState('N'))
-//		node->transform->setGlobalPosition(pos + glm::vec3(0, -1, 0) * elapsedTime);
-//
-//	
-//#endif		
 
-	//node->transform->transform = glm::rotate(node->transform->transform, 3.f * elapsedTime, glm::vec3(0, 1, 0));
 }
 
 
@@ -51,7 +32,7 @@ void HandController::drawRay(glm::mat4 view, glm::mat4 proj)
 	glDisable(GL_BLEND);
 	glLineWidth(10.0f);
 
-	glm::vec3 rayOrigin{node->transform->transform * glm::vec4(0, 0, 0, 1)};
+	glm::vec3 rayOrigin{ node->transform->transform * glm::vec4(0, 0, 0, 1) };
 	//glm::mat4 rotmat = glm::rotate(node->transform->transform, glm::radians(-60.f), glm::vec3(1, 0, 0));
 	//glm::vec3 rayFront{rotmat * glm::vec4(0, 0, -1, 1)};
 	glm::vec3 rayFront{ node->transform->transform * glm::vec4(0, 0, -1, 1) };
@@ -67,31 +48,33 @@ void HandController::drawRay(glm::mat4 view, glm::mat4 proj)
 	glEnd();
 }
 
-void HandController::drawDeferredPass() {
-	//glm::vec4 dir{ 0,0,-1,0 };
-	//dir = glm::rotate(node->transform->rotation, dir);
-
-	//glm::vec3 trueDir{ dir };
-	//glColor3f(1.f/244, 1.f/66, 1.f/223);
-	//glBegin(GL_LINES);
-	//auto& pos = node->transform->position;
-	//glVertex3f(pos.x, pos.y, pos.z);
-	//pos += trueDir * 100.f;
-	//glVertex3f(pos.x, pos.y, pos.z);
-	//glEnd();
-	//use classic opengl to render the pointer line from the hands if it's teleporting
+void HandController::drawForwardPass() {
+	HandRenderContext* context = dynamic_cast<HandRenderContext*>(renderContextForward);
+	
 }
-
 
 HandController::HandController(vrlib::Vive::Controller c)
 {
 	controller = c;
-
-		
-
+	renderContextForward = HandRenderContext::getInstance();
 }
 
 
 HandController::~HandController() 
 {
 }
+
+void HandController::HandRenderContext::init()
+{
+}
+
+void HandController::HandRenderContext::frameSetup(const glm::mat4 & projectionMatrix, const glm::mat4 & viewMatrix)
+{
+	//renderShader->use();
+	//renderShader->setUniform(RenderUniform::projectionMatrix, projectionMatrix);
+	//renderShader->setUniform(RenderUniform::viewMatrix, viewMatrix);
+	//renderShader->setUniform(RenderUniform::diffuseColor, glm::vec4(1, 1, 1, 1));
+	//renderShader->setUniform(RenderUniform::textureFactor, 1.0f);
+}
+
+

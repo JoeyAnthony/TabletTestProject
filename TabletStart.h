@@ -5,15 +5,19 @@
 #include <VrLib\Device.h>
 #include <glm\glm.hpp>
 #include "HandController.h"
+#include "CameraApp.h"
+
 
 class TabletStart : public vrlib::Application
 {
 private:
-	vrlib::Vive vive;
-	vrlib::tien::Tien Engine;
-	HandController* hand;
+
 
 public:
+	vrlib::Vive vive;
+	vrlib::tien::Tien Engine;
+	CameraApp app;
+
 	virtual void init() override;
 	virtual void preFrame(double frameTime, double totalTime) override;
 	virtual void latePreFrame() override;
