@@ -11,6 +11,7 @@ using vrlib::gl::FBO;
 using std::make_unique;
 
 Tablet::Tablet(const PositionalDevice& pointer, CameraApp* capp) : camapp(capp), m_pointer(pointer), fbo(capp->fbo), fboTexture(capp->fbo) {
+	camapp->fboRes.x *= widthToHeightRatio;
 	material.texture = &fboTexture;
 	material.normalmap = nullptr;
 
@@ -21,7 +22,7 @@ Tablet::Tablet(const PositionalDevice& pointer, CameraApp* capp) : camapp(capp),
 	vrlib::gl::setTan3(v, glm::vec3(1, 0, 0));
 	vrlib::gl::setBiTan3(v, glm::vec3(0, 1, 0));
 
-	vec2 sizevec{ size, size * withToHeightRatio };
+	vec2 sizevec{ size, size * widthToHeightRatio };
 
 
 	vrlib::gl::setP3(v, glm::vec3(-sizevec.x / 2.0f, -sizevec.y / 2.0f, 0));			vrlib::gl::setT2(v, glm::vec2(0, 0));			vertices.push_back(v);
@@ -82,8 +83,6 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 
 	
 
-	
-
 	float intersectionDistance;
 	bool intersectSucces = intersectRayPlane(pointerPos, pointerDir, {}, { 0,0,-1 }, intersectionDistance);
 	intersectionDistance *= -1;
@@ -93,7 +92,7 @@ void Tablet::update(float elapsedTime, Scene& scene) {
 	auto intercectionpos = pointerPos + -intersectionDistance * pointerDir;
 
 	mat4 planePosToPixelCoordMat{resx/size,0,0,0,
-								 0,(resy/ withToHeightRatio)/size,0,0,
+								 0,(resy/ widthToHeightRatio)/size,0,0,
 								 0,0,0,0,
 								 resx/2.f,resy/2.f,0,0 };
 

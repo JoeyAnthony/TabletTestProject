@@ -33,9 +33,9 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 
 	void clear(glm::vec4 clearColor = {0,0,0,1});
 public:
-	static constexpr int resx = 1080, resy = 1920;
-	static constexpr float withToHeightRatio = ((float)resy) / resx;
-	static constexpr float size = 0.5f;
+	static constexpr int resx = 600, resy = 800;
+	static constexpr float widthToHeightRatio = ((float)resy) / resx;
+	static constexpr float size = 0.25f;
 
 	Tablet(const vrlib::PositionalDevice& pointer, CameraApp* capp);
 
