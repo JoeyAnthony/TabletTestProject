@@ -6,7 +6,7 @@
 
 class HandController : public vrlib::tien::components::Renderable
 {
-
+	
 private:
 	class HandRenderContext : public vrlib::tien::components::Renderable::RenderContext, public vrlib::Singleton<HandRenderContext>
 	{

@@ -33,6 +33,12 @@
     <ClInclude Include="CameraApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VisibilityTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OcclusionQuery.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CameraApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VisibilityTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OcclusionQuery.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

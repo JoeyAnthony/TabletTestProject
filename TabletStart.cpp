@@ -65,7 +65,7 @@ void TabletStart::loadScene()
 	Tablet* tablet = new Tablet(vive.controllers[1].transform, &app);
 	leftHand->addComponent(tablet);
 	leftHand->addComponent(new components::MeshRenderer(tablet));
-	leftHand->addComponent(new components::ModelRenderer("../Development/Applications/TabletTestProject/data/iPad Mini/iPad Mini.obj"));
+	//leftHand->addComponent(new components::ModelRenderer("../Development/Applications/TabletTestProject/data/ipad/ipad.obj"));
 }
 
 

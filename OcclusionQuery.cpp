@@ -1,0 +1,44 @@
+#include "stdafx.h"
+#include "OcclusionQuery.h"
+
+
+
+void OcclusionQuery::beginQuery()
+{
+	hasResults = false;
+	glBeginQuery(type, queryID);
+}
+
+void OcclusionQuery::endQuery()
+{
+	glEndQuery(type);
+}
+
+bool OcclusionQuery::resultsAvailable()
+{
+	GLint param;
+	glGetQueryObjectiv(queryID, GL_QUERY_RESULT_AVAILABLE, &param);
+	if (param)
+		hasResults = true;
+
+	//TODO test if param is true or false
+	return param;
+}
+
+int OcclusionQuery::getResult()
+{
+	if (resultsAvailable)
+		return renderedSamples;
+	
+	return 0;
+}
+
+
+OcclusionQuery::OcclusionQuery()
+{
+	glGenQueries(1, &queryID);
+}
+
+OcclusionQuery::~OcclusionQuery()
+{
+}

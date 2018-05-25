@@ -157,14 +157,17 @@
   <ItemGroup>
     <ClInclude Include="CameraApp.h" />
     <ClInclude Include="HandController.h" />
+    <ClInclude Include="OcclusionQuery.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Tablet.h" />
     <ClInclude Include="TabletStart.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="VisibilityTester.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CameraApp.cpp" />
     <ClCompile Include="HandController.cpp" />
+    <ClCompile Include="OcclusionQuery.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -174,6 +177,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Tablet.cpp" />
     <ClCompile Include="TabletStart.cpp" />
+    <ClCompile Include="VisibilityTester.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
