@@ -73,8 +73,8 @@ Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer, in
 	if (apps.size() == 0) throw "you need to pass at leat one app";
 	for (auto& app : this->apps) {
 		app->tablet = this;
-		app->position = { 0,0 };
-		app->size = m_resolution;
+		app->geometry.position = { 0,0 };
+		app->geometry.size = m_resolution;
 		app->initalize();
 	}
 
@@ -132,14 +132,14 @@ void Tablet::updateInput() {
 	m_screenPosInBounds = ivec2(intercectionPosition2) == m_screenPos;
 }
 
-void Tablet::updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, ivec2 mousePos, bool inBounds, TabletGraphicsObject::SettingsStore settings) {
-	mousePos -= obj->position;
-	inBounds = inBounds ? mousePos.x >= 0 && mousePos.x < obj->size.x && mousePos.y >= 0 && mousePos.y < obj->size.y : false;
-	for (int i = 0; i < TabletGraphicsObject::DummyLast; ++i)
-		settings[i] = settings[i] & obj->settings[i];
+void Tablet::updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, ivec2 mousePos, bool inBounds, bool active) {
+	mousePos -= obj->geometry.position;
+	inBounds = inBounds ? mousePos.x >= 0 && mousePos.x < obj->geometry.size.x && mousePos.y >= 0 && mousePos.y < obj->geometry.size.y : false;
+	
+	active = active && obj->settings[TabletGraphicsObject::Active];
 
-	if (settings[TabletGraphicsObject::Active] && obj->settings[TabletGraphicsObject::Updateable]) obj->update(deltaMs);
-	if (settings[TabletGraphicsObject::Active] && obj->settings[TabletGraphicsObject::Hoverable]) {
+	if (active && obj->settings[TabletGraphicsObject::Updateable]) obj->update(deltaMs);
+	if (active && obj->settings[TabletGraphicsObject::Hoverable]) {
 		if (obj->hadHover && !inBounds) {
 			obj->onMouseLeave();
 		}
@@ -156,27 +156,31 @@ void Tablet::updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, ivec
 	// Clickable stuff
 
 	for (auto& child : obj->children)
-		updateGraphicsObject(child, deltaMs, mousePos, inBounds, settings);
+		updateGraphicsObject(child, deltaMs, mousePos, inBounds, active);
 }
 
 void Tablet::updateApps(float deltaMs) {
-	updateGraphicsObject(activeApp, deltaMs, m_screenPos, m_screenPosInBounds, activeApp->settings);
+	updateGraphicsObject(activeApp, deltaMs, m_screenPos, m_screenPosInBounds, true);
 	for (auto& app : apps)
 		if (app != activeApp)
 			app->updateInactive(deltaMs);
 }
 
 void Tablet::drawGraphicsObject(TabletGraphicsObject* obj, glm::mat4 transform) {
-	if (obj->settings[TabletGraphicsObject::Visable] == false) return;
-	
-	transform[3][0] += obj->position.x;
-	transform[3][1] += obj->position.y;
 
+	// We update the transfrom with the position so the opengl code can be in local space
+	transform[3][0] += obj->geometry.position.x;
+	transform[3][1] += obj->geometry.position.y;
+
+	// We load the adjusted matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(value_ptr(transform));
+	m_activeTransfrom = transform;
 
-	obj->draw();
+	// We draw the object
+	obj->draw(m_pixelToTexCoordMat, transform);
 
+	// We draw all children that are visable
 	for (auto child : obj->children)
 		if (child->settings[TabletGraphicsObject::Visable])
 			drawGraphicsObject(child, transform);
@@ -197,6 +201,7 @@ void Tablet::updateScreen() {
 	glUseProgram(0);
 	glDisable(GL_TEXTURE_2D);
 
+	// Draw the app
 	drawGraphicsObject(activeApp, { 1,0,0,0,
 								    0,1,0,0,
 								    0,0,0,0,

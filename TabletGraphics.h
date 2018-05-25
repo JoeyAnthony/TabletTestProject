@@ -3,8 +3,9 @@
 #include <glm\common.hpp>
 #include <functional>
 #include <bitset>
-
-#include <iostream>
+#include <VrLib\Font.h>
+#include <map>
+#include <VrLib\gl\shader.h>
 
 class Tablet;
 
@@ -29,19 +30,22 @@ public:
 		Visable = 1,
 		Clickable = 2,
 		Hoverable = 3,
-		Updateable = 4,
-		DummyLast = 5
+		Updateable = 4
 	};
 	using SettingsStore = typename std::bitset<5>;
 
 	SettingsStore settings;
 	
-	glm::ivec2 position;
-	glm::ivec2 size;
+	struct Geometry {
+		glm::ivec2 position;
+		glm::ivec2 size;
+	};
+
+	Geometry geometry;
 
 	bool isHovering() { return hadHover; }
 
-	virtual void draw() {};
+	virtual void draw(glm::mat4 proj, glm::mat4 model) {};
 	virtual void onClick() {};
 	virtual void onMouseEnter() {};
 	virtual void onMouseLeave() {};
@@ -71,6 +75,28 @@ namespace TabletGraphicsComonents {
 
 		Square(glm::vec3 _color, glm::vec3 _hoverColor, TabletGraphicsObject* parent);
 
-		void draw() override;
+		void draw(glm::mat4 proj, glm::mat4 model) override;
+	};
+
+	class Text : public TabletGraphicsObject {
+		enum class FontUniform
+		{
+			projectionMatrix,
+			modelMatrix,
+			s_texture,
+			color,
+		};
+		static vrlib::gl::Shader<FontUniform>* fontShader;
+		static std::map<std::pair<std::string, float>, vrlib::TrueTypeFont*> fonts;
+		vrlib::TrueTypeFont* font;
+	public:
+
+		glm::vec3 color, hoverColor;
+		std::string text;
+		const float height;
+
+		Text(glm::vec3 color, glm::vec3 hoverColor, std::string text, std::string font, float heigth, TabletGraphicsObject* parent);
+
+		void draw(glm::mat4 proj, glm::mat4 model) override;
 	};
 }

@@ -44,6 +44,7 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 	// Constant matrixes to handle conversions
 	const glm::mat4 m_pixelToTexCoordMat;
 	const glm::mat4 m_planePosToPixelCoordMat;
+	glm::mat4 m_activeTransfrom;
 
 	// The input devices
 	const vrlib::PositionalDevice& m_pointer;
@@ -54,7 +55,7 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 
 	void updateInput();
 
-	void updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, glm::ivec2 mousePos, bool inBounds, TabletGraphicsObject::SettingsStore settings);
+	void updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, glm::ivec2 mousePos, bool inBounds, bool active);
 	void updateApps(float deltaMs);
 	void drawGraphicsObject(TabletGraphicsObject* obj, glm::mat4 transform);
 	void updateScreen();
@@ -69,6 +70,9 @@ public:
 
 	void update(float elapsedTime, vrlib::tien::Scene& scene) override;
 	void postUpdate(vrlib::tien::Scene& scene) override;
+
+	glm::mat4 getPixelToTexCoordMat() { return m_pixelToTexCoordMat; }
+	glm::mat4 getActiveTransform() { return m_activeTransfrom; }
 
 	template <typename A>
 	A * getApp() {
