@@ -60,4 +60,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="data\Shaders\simple.fs" />
+    <None Include="data\Shaders\simple.vs" />
+  </ItemGroup>
 </Project>

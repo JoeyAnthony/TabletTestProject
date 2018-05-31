@@ -124,7 +124,7 @@ namespace TabletGraphicsComonents {
 
 		fontShader->setUniform(FontUniform::projectionMatrix, renderInfo.projectionMatrix);
 		fontShader->setUniform(FontUniform::modelMatrix, renderInfo.modelViewMatrix);
-		fontShader->setUniform(FontUniform::color, color);
+		fontShader->setUniform(FontUniform::color, glm::vec4(color, 1.0f));
 		font->drawText<vrlib::gl::VertexP2T2>(text);
 	}
 

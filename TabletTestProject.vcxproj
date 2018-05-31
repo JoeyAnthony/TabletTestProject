@@ -177,6 +177,10 @@
     <ClCompile Include="TabletGraphics.cpp" />
     <ClCompile Include="TabletStart.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="data\Shaders\simple.fs" />
+    <None Include="data\Shaders\simple.vs" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

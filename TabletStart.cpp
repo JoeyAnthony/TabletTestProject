@@ -46,7 +46,7 @@ void TabletStart::loadScene()
 {
 	Engine.scene.reset();
 
-	std::ifstream str = std::ifstream("../Development/Applications/TabletTestProject/data/Scenes/TabletWorld.json");
+	std::ifstream str = std::ifstream("../Development/Applications/TabletTestProject/data/TabletTestProject/Scenes/TabletWorld.json");
 	json scene = json::parse(str);
 	Engine.scene.fromJson(scene["scene"], scene, [](auto) {return nullptr; });
 
@@ -63,7 +63,8 @@ void TabletStart::loadScene()
 	leftHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
 	Tablet* tablet = new Tablet({ 1920,1080 }, 1, vive.controllers[1].transform, vive.controllers[1].triggerButton, {new MainApp()});
 	leftHand->addComponent(tablet);
-	leftHand->addComponent(new components::MeshRenderer(tablet));
+	auto mr = new ShadelessMeshRenderer(tablet);
+	leftHand->addComponent(mr);
 	leftHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
 }
 

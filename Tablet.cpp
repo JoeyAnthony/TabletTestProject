@@ -256,3 +256,80 @@ void Tablet::setActiveApp(TabletApp* app) {
 	activeApp = app;
 	activeApp->onActivation();
 }
+
+
+
+ShadelessMeshRenderer::ShadelessMeshRenderer(vrlib::tien::components::MeshRenderer::Mesh* mesh)
+{
+	this->mesh = mesh;
+	vao = nullptr;
+	if (mesh)
+		updateMesh();
+
+	renderContextForward = ShadelessForwardRenderContext::getInstance();
+}
+
+void ShadelessMeshRenderer::updateMesh()
+{
+	vbo.setData(mesh->vertices.size(), &mesh->vertices[0], GL_STATIC_DRAW);
+	vio.setData(mesh->indices.size(), &mesh->indices[0], GL_STATIC_DRAW);
+
+	if (!vao)
+		vao = new gl::VAO(&vbo);
+	vao->bind();
+	vio.bind();
+	vao->unBind();
+}
+
+
+ShadelessMeshRenderer::~ShadelessMeshRenderer()
+{
+
+}
+
+
+void ShadelessMeshRenderer::drawForwardPass()
+{
+	components::Transform* t = node->getComponent<vrlib::tien::components::Transform>();
+
+	ShadelessForwardRenderContext* context = dynamic_cast<ShadelessForwardRenderContext*>(renderContextForward);
+	context->renderShader->use(); //TODO: only call this once!
+
+	context->renderShader->setUniform(ShadelessForwardRenderContext::RenderUniform::modelMatrix, t->globalTransform);
+	mesh->material.texture->bind();
+
+	if (vao)
+	{
+		vao->bind();
+		glDrawElements(GL_TRIANGLES, mesh->indices.size(), GL_UNSIGNED_INT, 0);
+		Renderer::drawCalls++;
+		vao->unBind();
+	}
+}
+
+
+void ShadelessMeshRenderer::ShadelessForwardRenderContext::init()
+{
+	renderShader = new vrlib::gl::Shader<RenderUniform>("data/TabletTestProject/Shaders/simple.vert", "data/TabletTestProject/Shaders/simple.frag");
+	renderShader->bindAttributeLocation("a_position", 0);
+	renderShader->bindAttributeLocation("a_normal", 1);
+	renderShader->bindAttributeLocation("a_bitangent", 2);
+	renderShader->bindAttributeLocation("a_tangent", 3);
+	renderShader->bindAttributeLocation("a_texture", 4);
+	renderShader->link();
+	renderShader->bindFragLocation("fragColor", 0);
+	//shader->bindFragLocation("fragColor", 0);
+	renderShader->registerUniform(RenderUniform::modelMatrix, "modelMatrix");
+	renderShader->registerUniform(RenderUniform::projectionMatrix, "projectionMatrix");
+	renderShader->registerUniform(RenderUniform::viewMatrix, "viewMatrix");
+	renderShader->registerUniform(RenderUniform::s_texture, "s_texture");
+	renderShader->use();
+	renderShader->setUniform(RenderUniform::s_texture, 0);
+}
+
+void ShadelessMeshRenderer::ShadelessForwardRenderContext::frameSetup(const glm::mat4 & projectionMatrix, const glm::mat4 & viewMatrix)
+{
+	renderShader->use();
+	renderShader->setUniform(RenderUniform::projectionMatrix, projectionMatrix);
+	renderShader->setUniform(RenderUniform::viewMatrix, viewMatrix);
+}

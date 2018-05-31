@@ -146,7 +146,7 @@ namespace TabletGraphicsComonents {
 	};
 
 	class FBO : public Texture {
-		public:
+	public:
 		FBO(vrlib::gl::FBO* fbo, TabletGraphicsObject* parent);
 	};
 }
