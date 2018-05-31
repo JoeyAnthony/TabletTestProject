@@ -12,7 +12,7 @@
 #include <initializer_list>
 
 class Tablet : public vrlib::tien::Component, public vrlib::tien::components::MeshRenderer::Mesh {
-	
+public: // This class is public to allow easy acces from TabletGraphics
 	// We use this class to convert our FBO to a texture for the mesh
 	// @NOTE: this class originated in NetworkEngine/PanelComponent.h/PanelComponent
 	// @TODO: maybe put this class in TIEN?
@@ -30,7 +30,7 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 		}
 
 	};
-
+private:
 	// Resolution related variables
 	// m_size gives us the size of the x-axis and we use m_withToHeightRato -- wich is calculated by res.y/res.x -- to determine the size of the y-axis
 	const glm::ivec2 m_resolution;
@@ -48,14 +48,20 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 
 	// The input devices
 	const vrlib::PositionalDevice& m_pointer;
+	const vrlib::DigitalDevice& m_trigger;
 
 	// The runtime input values
 	glm::ivec2 m_screenPos;
 	bool m_screenPosInBounds;
+	TabletGraphicsObject* m_mouseDownObject = nullptr;
+
+	struct updateResult {
+		bool tookHover;
+		bool tookClick;
+	};
 
 	void updateInput();
-
-	void updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, glm::ivec2 mousePos, bool inBounds, bool active);
+	updateResult updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, glm::ivec2 mousePos, bool inBounds, bool active, bool mouseDown);
 	void updateApps(float deltaMs);
 	void drawGraphicsObject(TabletGraphicsObject* obj, glm::mat4 transform);
 	void updateScreen();
@@ -66,7 +72,7 @@ class Tablet : public vrlib::tien::Component, public vrlib::tien::components::Me
 	TabletApp* activeApp;
 public:
 
-	Tablet(glm::ivec2 resolution, float size, const vrlib::PositionalDevice& pointer, std::initializer_list<TabletApp*> apps);
+	Tablet(glm::ivec2 resolution, float size, const vrlib::PositionalDevice& pointer, const vrlib::DigitalDevice& trigger, std::initializer_list<TabletApp*> apps);
 
 	void update(float elapsedTime, vrlib::tien::Scene& scene) override;
 	void postUpdate(vrlib::tien::Scene& scene) override;

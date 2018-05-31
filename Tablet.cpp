@@ -10,9 +10,9 @@ using vrlib::gl::FBO;
 using std::make_unique;
 using std::initializer_list;
 
-Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer, initializer_list<TabletApp*> apps) :
+Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer, const DigitalDevice& trigger, initializer_list<TabletApp*> apps) :
 	m_resolution(resolution), m_size(size), m_withToHeightRatio(((float)m_resolution.y) / m_resolution.x),
-	m_pointer(pointer), m_fbo(m_resolution.x, m_resolution.y), m_fboTexture(&m_fbo), 
+	m_pointer(pointer), m_trigger(trigger), m_fbo(m_resolution.x, m_resolution.y), m_fboTexture(&m_fbo), 
 	
 	// We construct a matrix to convert our plane coordinates to pixel coordinates
 	// Syntax: [a,b] is the inclusive range between a and b. '=>' is the transformation we want. 'f' is the function that does the conversion
@@ -130,16 +130,32 @@ void Tablet::updateInput() {
 	// We set the screen pos and do bounds checks, we also indicate wether the intersection point was within the bounds
 	m_screenPos = min(max(ivec2(intercectionPosition2), { 0,0 }), m_resolution);
 	m_screenPosInBounds = ivec2(intercectionPosition2) == m_screenPos;
+
+
+	//std::cout << "trigger " << (m_trigger.getData() == DigitalState::TOGGLE_OFF) << std::endl;
 }
 
-void Tablet::updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, ivec2 mousePos, bool inBounds, bool active) {
-	mousePos -= obj->geometry.position;
-	inBounds = inBounds ? mousePos.x >= 0 && mousePos.x < obj->geometry.size.x && mousePos.y >= 0 && mousePos.y < obj->geometry.size.y : false;
+Tablet::updateResult Tablet::updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, ivec2 mousePos, bool inBounds, bool active, bool mouseDown) {
+	updateResult result{ false, false };
+	bool useHover = true;
 	
+	mousePos -= obj->getGeometry().position;
+	inBounds = inBounds ? mousePos.x >= 0 && mousePos.x < obj->getGeometry().size.x && mousePos.y >= 0 && mousePos.y < obj->getGeometry().size.y : false;
+
 	active = active && obj->settings[TabletGraphicsObject::Active];
 
 	if (active && obj->settings[TabletGraphicsObject::Updateable]) obj->update(deltaMs);
-	if (active && obj->settings[TabletGraphicsObject::Hoverable]) {
+
+	for (auto& child : obj->children) {
+		auto childResult = updateGraphicsObject(child, deltaMs, mousePos, inBounds && useHover, active, mouseDown && !result.tookClick);
+		
+		if (result.tookClick == false && ( childResult.tookHover || childResult.tookClick)) {
+			useHover = obj->childerenShareMouseHover;
+			result = childResult;
+		}
+	}
+
+	if (active && useHover && obj->settings[TabletGraphicsObject::Hoverable]) {
 		if (obj->hadHover && !inBounds) {
 			obj->onMouseLeave();
 		}
@@ -153,14 +169,27 @@ void Tablet::updateGraphicsObject(TabletGraphicsObject* obj, float deltaMs, ivec
 		obj->hadHover = false;
 	}
 
-	// Clickable stuff
+	if (!result.tookClick && active && inBounds && mouseDown && obj->settings[TabletGraphicsObject::Clickable]) {
+		result.tookClick = true;
 
-	for (auto& child : obj->children)
-		updateGraphicsObject(child, deltaMs, mousePos, inBounds, active);
+		if (m_mouseDownObject) throw "there can only be one mouse down object";
+
+		m_mouseDownObject = obj;
+	}
+
+	return result;
 }
 
 void Tablet::updateApps(float deltaMs) {
-	updateGraphicsObject(activeApp, deltaMs, m_screenPos, m_screenPosInBounds, true);
+	bool mouseDown = m_trigger.getData() == DigitalState::TOGGLE_ON;
+
+	if (m_trigger.getData() == DigitalState::TOGGLE_OFF && m_mouseDownObject) {
+		m_mouseDownObject->onClick();
+		m_mouseDownObject = nullptr;
+		mouseDown = false;
+	}
+
+	updateGraphicsObject(activeApp, deltaMs, m_screenPos, m_screenPosInBounds, true, mouseDown);
 	for (auto& app : apps)
 		if (app != activeApp)
 			app->updateInactive(deltaMs);
@@ -169,8 +198,8 @@ void Tablet::updateApps(float deltaMs) {
 void Tablet::drawGraphicsObject(TabletGraphicsObject* obj, glm::mat4 transform) {
 
 	// We update the transfrom with the position so the opengl code can be in local space
-	transform[3][0] += obj->geometry.position.x;
-	transform[3][1] += obj->geometry.position.y;
+	transform[3][0] += obj->getGeometry().position.x;
+	transform[3][1] += obj->getGeometry().position.y;
 
 	// We load the adjusted matrix
 	glMatrixMode(GL_MODELVIEW);
@@ -178,7 +207,7 @@ void Tablet::drawGraphicsObject(TabletGraphicsObject* obj, glm::mat4 transform) 
 	m_activeTransfrom = transform;
 
 	// We draw the object
-	obj->draw(m_pixelToTexCoordMat, transform);
+	obj->draw({m_resolution,m_pixelToTexCoordMat,transform});
 
 	// We draw all children that are visable
 	for (auto child : obj->children)
