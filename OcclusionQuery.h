@@ -6,7 +6,7 @@ class OcclusionQuery
 private:
 	GLuint type = GL_SAMPLES_PASSED;
 	GLuint queryID = 0;
-	int renderedSamples = 0;
+	GLint renderedSamples = 0;
 	bool hasResults = false;
 
 public:

@@ -9,6 +9,7 @@
 #include <VrLib\tien\components\ModelRenderer.h>
 
 #include "Tablet.h"
+#include "VisibilityTester.h"
 
 
 using vrlib::logger;
@@ -38,6 +39,7 @@ void TabletStart::latePreFrame()
 void TabletStart::draw(const glm::mat4 & projectionMatrix, const glm::mat4 & modelViewMatrix)
 {
 	Engine.render(projectionMatrix, modelViewMatrix);
+	//vis->OcclusionDraw(modelViewMatrix, projectionMatrix);
 }
 
 void TabletStart::loadScene()
@@ -65,7 +67,14 @@ void TabletStart::loadScene()
 	Tablet* tablet = new Tablet(vive.controllers[1].transform, &app);
 	leftHand->addComponent(tablet);
 	leftHand->addComponent(new components::MeshRenderer(tablet));
-	//leftHand->addComponent(new components::ModelRenderer("../Development/Applications/TabletTestProject/data/ipad/ipad.obj"));
+
+
+
+	Node* testobj = new Node("Testobj", &Engine.scene);
+	testobj->addComponent(new components::Transform(glm::vec3(0, 0, -2)));
+	vrlib::tien::components::ModelRenderer* m = new components::ModelRenderer("data/Models/Environment/Building Blocks/Dungeon/wall_1.fbx");
+	testobj->addComponent(m);
+	testobj->addComponent(new VisibilityTester(0.75f, m, &app));
 }
 
 

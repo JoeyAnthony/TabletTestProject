@@ -27,11 +27,10 @@ bool OcclusionQuery::resultsAvailable()
 
 int OcclusionQuery::getResult()
 {
-	if (resultsAvailable)
-		return renderedSamples;
-	
-	return 0;
+	glGetQueryObjectiv(queryID, GL_QUERY_RESULT_NO_WAIT, &renderedSamples);
+	return renderedSamples;
 }
+
 
 
 OcclusionQuery::OcclusionQuery()

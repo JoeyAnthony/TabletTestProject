@@ -6,6 +6,7 @@
 #include <glm\glm.hpp>
 #include "HandController.h"
 #include "CameraApp.h"
+#include "VisibilityTester.h"
 
 
 class TabletStart : public vrlib::Application
@@ -17,6 +18,7 @@ public:
 	vrlib::Vive vive;
 	vrlib::tien::Tien Engine;
 	CameraApp app;
+
 
 	virtual void init() override;
 	virtual void preFrame(double frameTime, double totalTime) override;
