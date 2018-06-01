@@ -1,19 +1,41 @@
 #pragma once
 
 #include "TabletGraphics.h"
-
-#include "stdafx.h"
-#include <VrLib\tien\Tien.h>
 #include <VrLib\tien\components\MeshRenderer.h>
+#include <VrLib/gl/Vertex.h>
+#include <vrlib/gl/VIO.h>
+#include <vrlib/gl/VAO.h>
+#include <vrlib/gl/VBO.h>
+#include <VrLib\gl\FBO.h>
 #include <VrLib\Device.h>
 #include <VrLib\Texture.h>
-#include <VrLib\gl\FBO.h>
-#include <memory>
+#include <VrLib\tien\Tien.h>
 #include <initializer_list>
 
-class Tablet : public vrlib::tien::Component, public vrlib::tien::components::MeshRenderer::Mesh {
-private:
+class Tablet :  public vrlib::tien::components::MeshRenderer::Mesh, public vrlib::tien::components::Renderable {
 
+	// Our custom render context that allows us to render the tablet with custom shaders
+	class ShadelessForwardRenderContext : public vrlib::tien::components::Renderable::RenderContext, public vrlib::Singleton<ShadelessForwardRenderContext>
+	{
+	public:
+		enum class RenderUniform
+		{
+			modelMatrix,
+			projectionMatrix,
+			viewMatrix,
+			s_texture,
+		};
+		vrlib::gl::Shader<RenderUniform>* renderShader;
+		vrlib::Texture* defaultNormalMap;
+		virtual void init() override;
+		virtual void frameSetup(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) override;
+	};
+
+	// Mesh render variables and methods
+	void updateMesh();
+	vrlib::gl::VBO<vrlib::gl::VertexP3N2B2T2T2> vbo;
+	vrlib::gl::VIO<unsigned int> vio;
+	vrlib::gl::VAO* vao;
 
 public: // This class is public to allow easy acces from TabletGraphics
 	// We use this class to convert our FBO to a texture for the mesh
@@ -79,9 +101,7 @@ public:
 
 	void update(float elapsedTime, vrlib::tien::Scene& scene) override;
 	void postUpdate(vrlib::tien::Scene& scene) override;
-
-	glm::mat4 getPixelToTexCoordMat() { return m_pixelToTexCoordMat; }
-	glm::mat4 getActiveTransform() { return m_activeTransfrom; }
+	void drawForwardPass() override;
 
 	template <typename A>
 	A * getApp() {
@@ -95,44 +115,9 @@ public:
 	}
 
 	void setActiveApp(TabletApp* app);
-};
 
-
-#include <VrLib/gl/Vertex.h>
-#include <vrlib/gl/VIO.h>
-#include <vrlib/gl/VAO.h>
-#include <vrlib/gl/VBO.h>
-
-class ShadelessMeshRenderer : public vrlib::tien::components::Renderable
-{
-public:
-	class ShadelessForwardRenderContext : public vrlib::tien::components::Renderable::RenderContext, public vrlib::Singleton<ShadelessForwardRenderContext>
-	{
-	public:
-		enum class RenderUniform
-		{
-			modelMatrix,
-			projectionMatrix,
-			viewMatrix,
-			s_texture,
-		};
-		vrlib::gl::Shader<RenderUniform>* renderShader;
-		vrlib::Texture* defaultNormalMap;
-		virtual void init() override;
-		virtual void frameSetup(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) override;
-	};
-
-	ShadelessMeshRenderer(vrlib::tien::components::MeshRenderer::Mesh* mesh = nullptr);
-	~ShadelessMeshRenderer();
-	void updateMesh();
-
-	vrlib::tien::components::MeshRenderer::Mesh* mesh;
-	vrlib::gl::VBO<vrlib::gl::VertexP3N2B2T2T2> vbo;
-	vrlib::gl::VIO<unsigned int> vio;
-	vrlib::gl::VAO* vao;
-
-	void drawDeferredPass() {};
-	void drawForwardPass() override;
-	void drawShadowMap() {};
+	// Methods we need to implement to prevent being a virtual class
+	void drawDeferredPass() override {};
+	void drawShadowMap() override {};
 	virtual void buildEditor(vrlib::tien::EditorBuilder* builder, bool folded) override {};
 };
