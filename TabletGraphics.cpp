@@ -47,6 +47,23 @@ void TabletGraphicsObject::removeChild(TabletGraphicsObject* child) {
 namespace TabletGraphicsComonents {
 	namespace Details {
 		vrlib::gl::Shader<FontUniform>* fontShader;
+
+		void ensureFontShaderInit() {
+			if (!fontShader)
+			{
+				fontShader = new vrlib::gl::Shader<FontUniform>("data/NetworkEngine/shaders/font.vert", "data/NetworkEngine/shaders/font.frag");
+				fontShader->bindAttributeLocation("a_position", 0);
+				fontShader->bindAttributeLocation("a_color", 1);
+				fontShader->link();
+				fontShader->registerUniform(FontUniform::projectionMatrix, "projectionMatrix");
+				fontShader->registerUniform(FontUniform::modelMatrix, "modelMatrix");
+				fontShader->registerUniform(FontUniform::s_texture, "s_texture");
+				fontShader->registerUniform(FontUniform::color, "color");
+				fontShader->use();
+				fontShader->setUniform(FontUniform::s_texture, 0);
+				fontShader->setUniform(FontUniform::color, glm::vec4(1,1,1,1));
+			}
+		}
 	}
 		
 	std::map<std::pair<std::string, float>, vrlib::TrueTypeFont*> Text::fonts;
@@ -75,22 +92,9 @@ namespace TabletGraphicsComonents {
 	Text::Text(vec3 color, vec3 hoverColor, std::string text, std::string fontName, float height, TabletGraphicsObject* parent) : 
 		TabletGraphicsObject(parent), color(color), hoverColor(hoverColor), text(text), height(height) {
 
-		using namespace Details;
+		Details::ensureFontShaderInit();
 
-		if (!fontShader)
-		{
-			fontShader = new vrlib::gl::Shader<FontUniform>("data/NetworkEngine/shaders/font.vert", "data/NetworkEngine/shaders/font.frag");
-			fontShader->bindAttributeLocation("a_position", 0);
-			fontShader->bindAttributeLocation("a_color", 1);
-			fontShader->link();
-			fontShader->registerUniform(FontUniform::projectionMatrix, "projectionMatrix");
-			fontShader->registerUniform(FontUniform::modelMatrix, "modelMatrix");
-			fontShader->registerUniform(FontUniform::s_texture, "s_texture");
-			fontShader->registerUniform(FontUniform::color, "color");
-			fontShader->use();
-			fontShader->setUniform(FontUniform::s_texture, 0);
-			fontShader->setUniform(FontUniform::color, glm::vec4(color, 1));
-		}
+		
 
 		if (fonts.find(std::pair<std::string, float>(fontName, height)) == fonts.end())
 		{
@@ -156,8 +160,12 @@ namespace TabletGraphicsComonents {
 		return buttonText->getMinimumSize();
 	}
 
-	Texture::Texture(vrlib::Texture * texture, TabletGraphicsObject* parent) : TabletGraphicsObject(parent), texture(texture) {
+	Texture::Texture(TabletGraphicsObject* parent) : TabletGraphicsObject(parent) {
+		Details::ensureFontShaderInit();
+	}
 
+	Texture::Texture(vrlib::Texture * texture, TabletGraphicsObject* parent) : TabletGraphicsObject(parent), texture(texture) {
+		Details::ensureFontShaderInit();
 	}
 
 	void Texture::draw(TabletGraphicsRenderInfo renderInfo) {

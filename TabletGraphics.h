@@ -98,6 +98,8 @@ namespace TabletGraphicsComonents {
 			color,
 		};
 		extern vrlib::gl::Shader<FontUniform>* fontShader;
+
+		void ensureFontShaderInit();
 	}
 
 	class Square : public TabletGraphicsObject {
@@ -141,7 +143,7 @@ namespace TabletGraphicsComonents {
 	class Texture : public TabletGraphicsObject {
 	protected:
 		vrlib::Texture* texture;
-		Texture(TabletGraphicsObject* parent) : TabletGraphicsObject(parent) {}
+		Texture(TabletGraphicsObject* parent);
 	public:
 		Texture(vrlib::Texture* texture, TabletGraphicsObject* parent);
 

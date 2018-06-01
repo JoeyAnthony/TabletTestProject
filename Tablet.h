@@ -55,12 +55,14 @@ public: // This class is public to allow easy acces from TabletGraphics
 		}
 
 	};
-private:
+public:
 	// Resolution related variables
 	// m_size gives us the size of the x-axis and we use m_withToHeightRato -- wich is calculated by res.y/res.x -- to determine the size of the y-axis
 	const glm::ivec2 m_resolution;
 	const float m_size;
 	const float m_withToHeightRatio;
+
+private:
 	
 	// FBO related variables
 	vrlib::gl::FBO m_fbo;
