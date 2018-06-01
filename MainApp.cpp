@@ -2,12 +2,29 @@
 #include "MainApp.h"
 
 void MainApp::initalize() {
-	s = new Square({ 1,0,0 }, { 0,1,0 }, this);
-	s->setGeometry({ { 1000,700 }, { 150,150 } });
+	background = new Square({ 0.9,0.9,0.9 }, { 0.9,0.9,0.9 }, this);
+	background->setGeometry({ {0,0},getGeometry().size });
 
-	b = new Button("Toggle Square", [this]() { s->settings[Visable].flip(); }, this);
-	b->setGeometry({ { 200,300 },{ 400,400 } });
+	int h = 15;
+	buttons.push_back(new Button("Close", []() {exit(0); }, this));
+	buttons.back()->setGeometry({ {15,h},{110,0} });
+	h += 110 + 15;
 
-	p = new Picture("data/JohanDemo/marble.jpg", this);
-	p->setGeometry({ { 1250,0 }, { 512,512 } });
+	buttons.push_back(new Button("Red", [this]() {
+		background->hoverColor = background->color = { 1,0,0 };
+	}, this));
+	buttons.back()->setGeometry({ { 15,h },{ 110,0 } });
+	h += 110 + 15;
+
+	buttons.push_back(new Button("Green", [this]() {
+		background->hoverColor = background->color = { 0,1,0 };
+	}, this));
+	buttons.back()->setGeometry({ { 15,h },{ 110,0 } });
+	h += 110 + 15;
+
+	buttons.push_back(new Button("Blue", [this]() {
+		background->hoverColor = background->color = { 0,0,1 };
+	}, this));
+	buttons.back()->setGeometry({ { 15,h },{ 110,0 } });
+	h += 110 + 15;
 }

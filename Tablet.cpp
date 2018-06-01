@@ -133,6 +133,9 @@ void Tablet::drawGraphicsObject(TabletGraphicsObject* obj, glm::mat4 transform) 
 	glLoadMatrixf(value_ptr(transform));
 	m_activeTransfrom = transform;
 
+	glUseProgram(0);
+	glDisable(GL_TEXTURE_2D);
+
 	// We draw the object
 	obj->draw({ m_resolution,m_pixelToTexCoordMat,transform });
 

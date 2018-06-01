@@ -4,17 +4,15 @@
 
 #include <glm\common.hpp>
 #include <iostream>
+#include <vector>
 
 using namespace glm;
 using namespace TabletGraphicsComonents;
 
 class MainApp : public TabletApp {
 	
-	Square* s2;
-	Text* t;
-	Button* b;
-	Square* s;
-	Picture* p;
+	Square* background;
+	std::vector<Button*> buttons;
 public:
 	
 

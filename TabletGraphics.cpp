@@ -89,7 +89,7 @@ namespace TabletGraphicsComonents {
 			fontShader->registerUniform(FontUniform::color, "color");
 			fontShader->use();
 			fontShader->setUniform(FontUniform::s_texture, 0);
-			fontShader->setUniform(FontUniform::color, glm::vec4(1, 1, 1, 1));
+			fontShader->setUniform(FontUniform::color, glm::vec4(color, 1));
 		}
 
 		if (fonts.find(std::pair<std::string, float>(fontName, height)) == fonts.end())
@@ -114,9 +114,9 @@ namespace TabletGraphicsComonents {
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
+		
 		fontShader->use();
-
+		
 		//We invert the y-axis since font assumes a clasic y-axis, and we do some spacing
 		renderInfo.projectionMatrix[1][1] *= -1;
 		renderInfo.projectionMatrix[3][1] *= -1;
@@ -126,6 +126,8 @@ namespace TabletGraphicsComonents {
 		fontShader->setUniform(FontUniform::modelMatrix, renderInfo.modelViewMatrix);
 		fontShader->setUniform(FontUniform::color, glm::vec4(color, 1.0f));
 		font->drawText<vrlib::gl::VertexP2T2>(text);
+
+		glDisable(GL_BLEND);
 	}
 
 	ivec2 Text::getMinimumSize() {

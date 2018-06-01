@@ -130,7 +130,7 @@ namespace TabletGraphicsComonents {
 		std::function<void()> onTriggered;
 	public:
 		
-		Button(std::string text, std::function<void()>&& func, TabletGraphicsObject* parent, glm::vec3 backgroundColor = { 0.3f,0.3f,0.3f }, glm::vec3 textColor = { 0,0,0 }, glm::vec3 backgroundHoverColor = { 0.1f, 0.1f, 0.6f }, glm::vec3 textHoverColor = { 0,0,0 });
+		Button(std::string text, std::function<void()>&& func, TabletGraphicsObject* parent, glm::vec3 backgroundColor = { 255.f/255, 94.f/255, 102.f/255 }, glm::vec3 textColor = { 0,0,0 }, glm::vec3 backgroundHoverColor = { 213.f/255, 56.f/255, 61.f/255 }, glm::vec3 textHoverColor = { 0,0,0 });
 
 		void setGeometry(Geometry g) override;
 		glm::ivec2 getMinimumSize() override;
