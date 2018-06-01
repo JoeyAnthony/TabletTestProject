@@ -8,7 +8,7 @@ using namespace glm;
 
 void CameraApp::initalize()
 {
-	fbo = new vrlib::gl::FBO(getGeometry().size.x, getGeometry().size.y, 1, false);
+	settings = Updateable;
 	background = new TabletGraphicsComonents::FBO(fbo, this);
 }
 
@@ -48,7 +48,8 @@ void CameraApp::addOcclusionObject(VisibilityTester * obj)
 
 CameraApp::CameraApp(vrlib::tien::Node* hand) {
 	tabletHand = hand;
-	settings = 4;
+	fbo = new vrlib::gl::FBO(getGeometry().size.x, getGeometry().size.y, 1, false);
+	
 }
 
 CameraApp::CameraApp(vrlib::tien::Node * hand, std::function<void(const vrlib::tien::Scene&, const glm::mat4&, const glm::mat4&, vrlib::tien::Node*, int)> func) : CameraApp(hand) {
