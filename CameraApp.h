@@ -15,7 +15,7 @@ private:
 	vrlib::tien::components::Camera* camComponent;
 
 public:
-	glm::vec2 fboRes = glm::vec2{ 1000, 1000 };
+	glm::vec2 fboRes = glm::vec2{ 2048, 2048 };
 	glm::vec3 camTabletOffset = glm::vec3(0, 0, 0);
 	std::vector<VisibilityTester*> occlusionObjects;
 	vrlib::gl::FBO* fbo;
@@ -25,6 +25,7 @@ public:
 
 	void initialize();
 	void update();
+	void addOcclusionObject(vrlib::tien::Node* obj);
 	void addOcclusionObject(VisibilityTester* obj);
 
 	CameraApp();

@@ -8,6 +8,7 @@
 #include <VrLib\gl\FBO.h>
 #include <memory>
 #include "CameraApp.h"
+//#include "../../Applications/chemicalstorage/report.h"
 
 class Tablet : public vrlib::tien::Component, public vrlib::tien::components::MeshRenderer::Mesh {
 	class FboToTexture : public vrlib::Texture

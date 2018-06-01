@@ -10,10 +10,13 @@ using namespace glm;
 using vrlib::gl::FBO;
 using std::make_unique;
 
-Tablet::Tablet(const PositionalDevice& pointer, CameraApp* capp) : camapp(capp), m_pointer(pointer), fbo(capp->fbo), fboTexture(capp->fbo) {
-	camapp->fboRes.x *= widthToHeightRatio;
+Tablet::Tablet(const PositionalDevice& pointer, CameraApp* capp) : camapp(capp), m_pointer(pointer),  fboTexture(capp->fbo) {
+	//camapp->fboRes.y *= widthToHeightRatio;
+	camapp->initialize();
 	material.texture = &fboTexture;
 	material.normalmap = nullptr;
+	fbo = camapp->fbo;
+	fboTexture.fbo = camapp->fbo;
 
 	clear({ 1,0,0,1 });
 

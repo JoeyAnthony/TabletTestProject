@@ -17,7 +17,6 @@ private:
 public:
 	vrlib::Vive vive;
 	vrlib::tien::Tien Engine;
-	CameraApp app;
 
 
 	virtual void init() override;
