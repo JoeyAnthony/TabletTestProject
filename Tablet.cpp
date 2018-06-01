@@ -254,6 +254,13 @@ Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer, co
 	indices.push_back(2);
 	indices.push_back(3);
 
+	// Renderer setup
+	vao = nullptr;
+	updateMesh();
+
+	// We set the render context 
+	renderContextForward = ShadelessForwardRenderContext::getInstance();
+
 	// We check apps, and ensure proper initialization
 	if (apps.size() == 0) throw "you need to pass at leat one app";
 	for (auto& app : this->apps) {
@@ -268,13 +275,6 @@ Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer, co
 
 	activeApp = this->apps[0];
 	activeApp->onActivation();
-
-	// Renderer setup
-	vao = nullptr;
-	updateMesh();
-
-	// We set the render context 
-	renderContextForward = ShadelessForwardRenderContext::getInstance();
 }
 
 void Tablet::setActiveApp(TabletApp* app) {

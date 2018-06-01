@@ -9,6 +9,7 @@
 #include <VrLib\gl\FBO.h>
 
 class Tablet;
+
 struct TabletGraphicsRenderInfo {
 	glm::ivec2 resolution;
 	glm::mat4 projectionMatrix;
@@ -25,13 +26,15 @@ private:
 
 	friend Tablet;
 
+	// Object tree variables
 	std::list<TabletGraphicsObject*> children;
+	TabletGraphicsObject* parent;
 
+	// Object tree methods
 	void addChild(TabletGraphicsObject* child);
 	void removeChild(TabletGraphicsObject* child);
 
-	TabletGraphicsObject* parent;
-
+	// State
 	bool hadHover = false;
 	Geometry geometry;
 public:
@@ -55,6 +58,9 @@ public:
 	virtual glm::ivec2 getMinimumSize();
 
 	bool isHovering() { return hadHover; }
+
+	// This variable is quite complex, if it is set to true when you hover over one of the children you can also hover over others
+	// This is usefull for composition, for instance a buttons text and background can both react to the hover
 	const bool childerenShareMouseHover;
 
 	virtual void draw(TabletGraphicsRenderInfo renderInfo) {};
@@ -68,20 +74,22 @@ class TabletApp : public TabletGraphicsObject {
 protected:
 	friend Tablet;
 
-	Tablet * tablet;
+	Tablet * tablet = nullptr;
 	TabletApp() : TabletGraphicsObject(nullptr, false) {};
 
 public:
 
-	virtual void initalize() {};
-	virtual bool linkToApps() { return true; };
-	virtual void updateInactive(float deltaMs) {};
-	virtual void onActivation() {};
-	virtual void onDeactivation() {};
+	virtual void initalize() {}; // When this method is called the tablet pointer is valid, but acces to other apps does not yet work
+	virtual bool linkToApps() { return true; }; // When this method is called you can query the tablet for other apps if you need a pointer to them
+	virtual void updateInactive(float deltaMs) {}; // This method is called once during every update for inactive apps, NOTE: children do not get updated
+	virtual void onActivation() {}; // This method is called when this app becomes the active app
+	virtual void onDeactivation() {}; // This method is called when this app becomes inactive after being the active app
 };
 
 namespace TabletGraphicsComonents {
 	namespace Details {
+		// The common shader that we use to render text and other textures
+
 		enum class FontUniform
 		{
 			projectionMatrix,
