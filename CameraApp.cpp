@@ -10,6 +10,7 @@ void CameraApp::initalize()
 {
 	settings = Updateable;
 	background = new TabletGraphicsComonents::FBO(fbo, this);
+	background->setGeometry({ {0,0},getGeometry().size });
 }
 
 void CameraApp::update(float deltaMS)
