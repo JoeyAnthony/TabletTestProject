@@ -9,8 +9,9 @@ using namespace glm;
 void CameraApp::initalize()
 {
 	settings[Updateable] = true;
-	//background = new TabletGraphicsComonents::FBO(fbo, this);
-	//background->setGeometry({ {0,0},getGeometry().size });
+	fbo = new vrlib::gl::FBO(getGeometry().size.x, getGeometry().size.y, true, 1);
+	background = new TabletGraphicsComonents::FBO(fbo, this);
+	background->setGeometry({ {0,0},getGeometry().size });
 }
 
 void CameraApp::update(float deltaMS)
@@ -23,6 +24,7 @@ void CameraApp::update(float deltaMS)
 	glViewport(0, 0, fboRes.x, fboRes.y);
 	fbo->bind();
 
+	Scene& s = tabletHand->getScene();
 	func(tabletHand->getScene(), perspective, model, tabletHand, 0);
 
 	for (VisibilityTester* objs : occlusionObjects)
@@ -51,7 +53,6 @@ void CameraApp::addOcclusionObject(VisibilityTester * obj)
 
 CameraApp::CameraApp(vrlib::tien::Node* hand) {
 	tabletHand = hand;
-	fbo = new vrlib::gl::FBO(getGeometry().size.x, getGeometry().size.y, 1, false);
 	
 }
 

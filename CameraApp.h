@@ -8,7 +8,7 @@ public:
 	TabletGraphicsComonents::FBO* background;
 
 	vrlib::tien::Node * tabletHand;
-	glm::vec2 fboRes = glm::vec2{ 2048, 2048 };
+	glm::vec2 fboRes = glm::vec2{ 1920, 1080 };
 	glm::vec3 camTabletOffset = glm::vec3(0, 0, 0);
 	std::vector<VisibilityTester*> occlusionObjects;
 	vrlib::gl::FBO* fbo;
