@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Tablet.h"
-#include "CameraApp.h"
 
 #include <glm\common.hpp>
 #include <iostream>
 #include <vector>
+
+class CameraApp;
 
 using namespace glm;
 using namespace TabletGraphicsComonents;

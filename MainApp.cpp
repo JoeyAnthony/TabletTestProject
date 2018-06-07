@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "MainApp.h"
+#include "CameraApp.h"
 
 void MainApp::initalize() {
 	background = new Square({}, {}, this);
