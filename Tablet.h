@@ -109,7 +109,7 @@ public:
 	A * getApp() {
 		for (auto& c : apps)
 		{
-			A* r = dynamic_cast<A*>(&c);
+			A* r = dynamic_cast<A*>(c);
 			if (r)
 				return r;
 		}

@@ -2,29 +2,22 @@
 #include "MainApp.h"
 
 void MainApp::initalize() {
-	background = new Square({ 0.9,0.9,0.9 }, { 0.9,0.9,0.9 }, this);
+	background = new Square({}, {}, this);
+	background->color = background->hoverColor = { 249.f / 255,247.f / 255,153.f / 255 };
 	background->setGeometry({ {0,0},getGeometry().size });
 
-	int h = 15;
-	buttons.push_back(new Button("Close", []() {exit(0); }, this));
-	buttons.back()->setGeometry({ {15,h},{110,0} });
-	h += 110 + 15;
+	title = new Text({}, {}, "Main Screen", "Arial", 100, this);
+	title->setGeometry({ {100, 1920-100-100}, {0,0} });
 
-	buttons.push_back(new Button("Red", [this]() {
-		background->hoverColor = background->color = { 1,0,0 };
-	}, this));
-	buttons.back()->setGeometry({ { 15,h },{ 110,0 } });
-	h += 110 + 15;
+	counter = new Text({}, {}, "Discrepancies photographed 5 of 23", "Arial", 60, this);
+	counter->setGeometry({ {100, 1920 - 200 - 100}, {} });
 
-	buttons.push_back(new Button("Green", [this]() {
-		background->hoverColor = background->color = { 0,1,0 };
-	}, this));
-	buttons.back()->setGeometry({ { 15,h },{ 110,0 } });
-	h += 110 + 15;
+	buttons.push_back(new Button("Camera App", [tablet = tablet, &camApp = camApp]() {tablet->setActiveApp(camApp); }, this));
+	buttons.back()->setGeometry({ {120, 1920 - 300 - 100},{300,0} });
+}
 
-	buttons.push_back(new Button("Blue", [this]() {
-		background->hoverColor = background->color = { 0,0,1 };
-	}, this));
-	buttons.back()->setGeometry({ { 15,h },{ 110,0 } });
-	h += 110 + 15;
+bool MainApp::linkToApps() {
+	if ((camApp = tablet->getApp<CameraApp>()) == nullptr) return false;
+
+	return true;
 }
