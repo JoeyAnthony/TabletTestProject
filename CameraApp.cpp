@@ -8,21 +8,20 @@ using namespace glm;
 
 void CameraApp::initalize()
 {
-	settings = Updateable;
-	background = new TabletGraphicsComonents::FBO(fbo, this);
-	background->setGeometry({ {0,0},getGeometry().size });
+	settings[Updateable] = true;
+	//background = new TabletGraphicsComonents::FBO(fbo, this);
+	//background->setGeometry({ {0,0},getGeometry().size });
 }
 
 void CameraApp::update(float deltaMS)
 {
-	fbo->bind();
 	mat4 model = translate(glm::mat4(), camTabletOffset);
 	mat4 perspective = glm::perspective(glm::radians(fov), fboRes.y / fboRes.x, 0.01f, 1000.0f);
 
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glViewport(0, 0, fboRes.x, fboRes.y);
-
+	fbo->bind();
 
 	func(tabletHand->getScene(), perspective, model, tabletHand, 0);
 
@@ -31,8 +30,11 @@ void CameraApp::update(float deltaMS)
 		objs->OcclusionDraw(inverse(tabletHand->transform->globalTransform) * model, perspective);
 	}
 
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	//glClearColor(1, 0, 0, 1);
+	//glClear(GL_COLOR_BUFFER_BIT);
+
 	fbo->unbind();
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 void CameraApp::addOcclusionObject(Node* obj)
