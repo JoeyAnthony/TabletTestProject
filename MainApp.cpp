@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "MainApp.h"
+#include "CameraApp.h"
+#include "MapApp.h"
 
 void MainApp::initalize() {
 	background = new Square({}, {}, this);
@@ -14,10 +16,14 @@ void MainApp::initalize() {
 
 	buttons.push_back(new Button("Camera App", [tablet = tablet, &camApp = camApp]() {tablet->setActiveApp(camApp); }, this));
 	buttons.back()->setGeometry({ {120, 1920 - 300 - 100},{300,0} });
+
+	buttons.push_back(new Button("Map App", [tablet = tablet, &mapApp = mapApp]() {tablet->setActiveApp(mapApp); }, this));
+	buttons.back()->setGeometry({ { 120, 1920 - 300 - 200 },{ 300,0 } });
 }
 
 bool MainApp::linkToApps() {
 	if ((camApp = tablet->getApp<CameraApp>()) == nullptr) return false;
+	if ((mapApp = tablet->getApp<MapApp>()) == nullptr) return false;
 
 	return true;
 }

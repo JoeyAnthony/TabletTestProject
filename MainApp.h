@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Tablet.h"
-#include "CameraApp.h"
 
 #include <glm\common.hpp>
 #include <iostream>
@@ -9,6 +8,9 @@
 
 using namespace glm;
 using namespace TabletGraphicsComonents;
+
+class CameraApp;
+class MapApp;
 
 class MainApp : public TabletApp {
 	Square* background;
@@ -18,6 +20,7 @@ class MainApp : public TabletApp {
 	std::vector<Button*> buttons;
 
 	CameraApp* camApp;
+	MapApp * mapApp;
 public:
 	
 
