@@ -29,8 +29,17 @@ void MapApp::MapScroll::draw(TabletGraphicsRenderInfo renderInfo) {
 	glDisable(GL_CULL_FACE);
 
 	const auto mapPos = (worldPos - centerWorld) / wordToMapScale + vec2(0.5f,0.5f);
-	const auto xoffset = mapZoom/2;
-	const auto yoffset = (getGeometry().size.y / (float)getGeometry().size.x) * mapZoom/2;
+
+	float mapZoomAdj = 1;
+	if (mapZoom < 0) {
+		mapZoomAdj = pow(2, -mapZoom);
+	}
+	else if (mapZoom > 0) {
+		mapZoomAdj = 1.f / pow(2, mapZoom);
+	}
+
+	const auto xoffset = mapZoomAdj /2;
+	const auto yoffset = (getGeometry().size.y / (float)getGeometry().size.x) * mapZoomAdj /2;
 
 	fontShader->use();
 	fontShader->setUniform(FontUniform::modelMatrix, renderInfo.modelViewMatrix);
@@ -60,8 +69,12 @@ void MapApp::MapScroll::setWorldPos(glm::vec2 worldPos) {
 	this->worldPos = worldPos;
 }
 
-void MapApp::MapScroll::setMapZoom(float mapZoom) {
-	this->mapZoom = mapZoom;
+void MapApp::MapScroll::zoomIn() {
+	mapZoom = std::min(mapZoom + 1, 5);
+}
+
+void MapApp::MapScroll::zoomOut() {
+	mapZoom = std::max(mapZoom - 1, -2);
 }
 
 MapApp::MapApp(Node* node) : node(node) {
@@ -72,15 +85,18 @@ void MapApp::initalize() {
 	background = new Square({}, {}, this);
 	background->color = background->hoverColor = { 0.9,0.9,0.9 };
 	background->setGeometry(getGeometry());
-	baseMap = new MapScroll("data/TabletTestProject/Images/WorldMap.png", 200, { 0,0 }, this);
-	baseMap->setGeometry({ {50,50},getGeometry().size - ivec2(100,200) });
-	baseMap->setMapZoom(0.5);
+	baseMap = new MapScroll("data/TabletTestProject/Images/WorldMap.png", 20, { 0,0 }, this);
+	baseMap->setGeometry({ {50,50},getGeometry().size - ivec2(100,190) });
 	baseMap->setWorldPos({ 0,0 });
 	cursor = new Square({}, {}, this);
 	cursor->color = cursor->hoverColor = { 1,0,0 };
-	cursor->setGeometry({ {1080 / 2 - 15, 1080 / 2 - 15}, {30,30} });
+	cursor->setGeometry({ {1080 / 2 - 15, (1920 - 190 + 50) / 2 - 15}, {30,30} });
 	mainMenuButton = new Button("Back", [tablet = tablet, &mainApp = mainApp] {tablet->setActiveApp(mainApp); }, this);
 	mainMenuButton->setGeometry({ {50, 1920 - 100},{} });
+	zoomIn = new Button(" +", [&baseMap = baseMap] {baseMap->zoomIn(); }, this);
+	zoomIn->setGeometry({ {1080 - 50 - 60 - 80, 1920 - 100}, {60,60} });
+	zoomOut = new Button(" -", [&baseMap = baseMap] {baseMap->zoomOut(); }, this);
+	zoomOut->setGeometry({ { 1080 - 50 - 60, 1920 - 100 },{ 60,60 } });
 }
 
 bool MapApp::linkToApps() {

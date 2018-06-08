@@ -69,10 +69,6 @@ void TabletStart::loadScene()
 	leftHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
 	Tablet* tablet = new Tablet({ 1080,1920 }, 1, vive.controllers[1].transform, vive.controllers[1].triggerButton, {new MainApp(), camApp, new MapApp(leftHand)});
 	leftHand->addComponent(tablet);
-	//auto mr = new ShadelessMeshRenderer(tablet);
-	//leftHand->addComponent(mr);
-	leftHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
-
 	Node* testobj = new Node("Testobj", &Engine.scene);
 	testobj->addComponent(new components::Transform(glm::vec3(0, 0, -2)));
 	vrlib::tien::components::ModelRenderer* m = new components::ModelRenderer("data/Models/Environment/Building Blocks/Dungeon/wall_1.fbx");
