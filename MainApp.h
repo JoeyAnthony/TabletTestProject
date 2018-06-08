@@ -11,6 +11,9 @@ class CameraApp;
 using namespace glm;
 using namespace TabletGraphicsComonents;
 
+class CameraApp;
+class MapApp;
+
 class MainApp : public TabletApp {
 	Square* background;
 	Text* title;
@@ -19,6 +22,7 @@ class MainApp : public TabletApp {
 	std::vector<Button*> buttons;
 
 	CameraApp* camApp;
+	MapApp * mapApp;
 public:
 	
 

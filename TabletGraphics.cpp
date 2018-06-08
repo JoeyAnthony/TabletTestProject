@@ -51,7 +51,7 @@ namespace TabletGraphicsComonents {
 		void ensureFontShaderInit() {
 			if (!fontShader)
 			{
-				fontShader = new vrlib::gl::Shader<FontUniform>("data/NetworkEngine/shaders/font.vert", "data/NetworkEngine/shaders/font.frag");
+				fontShader = new vrlib::gl::Shader<FontUniform>("data/TabletTestProject/Shaders/font.vert", "data/TabletTestProject/Shaders/font.frag");
 				fontShader->bindAttributeLocation("a_position", 0);
 				fontShader->bindAttributeLocation("a_color", 1);
 				fontShader->link();

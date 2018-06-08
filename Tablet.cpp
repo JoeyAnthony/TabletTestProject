@@ -273,8 +273,9 @@ Tablet::Tablet(ivec2 resolution, float size, const PositionalDevice& pointer, co
 		app->initalize();
 	}
 
-	for (auto& app : this->apps) 
-		app->linkToApps();
+	for (auto& app : this->apps)
+		if (app->linkToApps() == false)
+			throw "Unable to link apps";
 
 	activeApp = this->apps[0];
 	activeApp->onActivation();
