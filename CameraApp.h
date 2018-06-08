@@ -6,8 +6,27 @@
 
 class MainApp;
 
+struct PollutedObjData
+{
+	vrlib::tien::Node* node;
+	vrlib::gl::FBO photo;
+
+	bool friend operator < (const PollutedObjData& lhs, const PollutedObjData& rhs) {
+		return lhs.node < rhs.node;
+	}
+
+	bool friend operator == (const PollutedObjData& lhs, const PollutedObjData& rhs) {
+		return lhs.node == rhs.node;
+	}
+
+	bool friend operator != (const PollutedObjData& lhs, const PollutedObjData& rhs) {
+		return lhs.node != rhs.node;
+	}
+};
+
 class CameraApp : public TabletApp
 {
+
 private:
 	int imagecount = 0;
 
@@ -24,8 +43,9 @@ private:
 	glm::mat4 perspective;
 	glm::mat4 model;
 	
+	vrlib::tien::Node* largestPollutedObjInScreen;
 	std::vector<vrlib::tien::Node*> pollutedObjInScreen;
-	std::set<vrlib::tien::Node*> pollutedObjectsFound;
+	std::vector<PollutedObjData> pollutedObjectsFound;
 
 public:
 	vrlib::tien::Node * tabletHand;
@@ -35,13 +55,13 @@ public:
 	
 	void initalize() override;
 	void update(float deltaMS) override;
-	std::vector<vrlib::tien::Node*> checkObjects();
+	void checkObjects();
 
 	void addOcclusionObject(vrlib::tien::Node* obj);
 	void addOcclusionObject(VisibilityTester* obj);
 
 	const glm::vec2 getRes();
-	const std::set<vrlib::tien::Node*> pollutedObjsList();
+	const std::vector<PollutedObjData> pollutedObjsList();
 
 	void savePhoto();
 	bool linkToApps();

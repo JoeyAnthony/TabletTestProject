@@ -7,19 +7,21 @@
 using namespace vrlib::tien;
 using namespace glm;
 
-bool VisibilityTester::isVisible()
+
+float VisibilityTester::isVisible()
 {
-	float amount = (float)query.getResult() / (camApp->getRes().x * camApp->getRes().y);
+	float amount = (float)query.lastRenderedSamples() / (camApp->getRes().x * camApp->getRes().y);
 	if (amount > treshold)
-		return true;
+		return amount;
 	else
-		return false;
+		return .0f;
 }
 
 Node* VisibilityTester::OcclusionDraw(glm::mat4 view, glm::mat4 proj)
 {
-	//std::cout<<"pixels: " << query.getResult() << std::endl;
-	
+	query.getResult();
+	std::cout << "renderedsamples: " << query.lastRenderedSamples() << std::endl;
+
 	//render quad
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(glm::value_ptr(proj));
@@ -70,6 +72,11 @@ Node* VisibilityTester::OcclusionDraw(glm::mat4 view, glm::mat4 proj)
 	glColorMask(true, true, true, true);
 
 	return node;
+}
+
+OcclusionQuery VisibilityTester::getQuery()
+{
+	return query;
 }
 
 /*

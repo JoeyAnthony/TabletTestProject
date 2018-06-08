@@ -44,16 +44,34 @@ void CameraApp::update(float deltaMS)
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
-std::vector<Node*> CameraApp::checkObjects()
+/*
+* Saves all polluted nodes in the screen in pollutedObjInScreen
+* saves node with the largest amount of rendered samples and null if no polluted object was seen
+*/
+void CameraApp::checkObjects()
 {
+	VisibilityTester* largest = nullptr;
+	Node* largestNode = nullptr;
 	pollutedObjInScreen.clear();
 	for (VisibilityTester* objs : occlusionObjects)
 	{
 		Node* node = objs->OcclusionDraw(inverse(tabletHand->transform->globalTransform) * model, perspective);
-		if (objs->isVisible())
+		//checks if object is visible
+		if (objs->isVisible() > 0.0f)
+		{
 			pollutedObjInScreen.push_back(node);
+
+			if (!largest){
+				largest = objs;
+				largestNode = node;
+			}
+			else if (objs->getQuery().lastRenderedSamples() > largest->getQuery().lastRenderedSamples()){
+				largest = objs;
+				largestNode = node;
+			}
+		}
 	}
-	return pollutedObjInScreen;
+	largestPollutedObjInScreen = largestNode;
 }
 
 void CameraApp::addOcclusionObject(Node* obj)
@@ -68,7 +86,7 @@ void CameraApp::addOcclusionObject(VisibilityTester * obj)
 	occlusionObjects.push_back(obj);
 }
 
-const std::set<vrlib::tien::Node*> CameraApp::pollutedObjsList()
+const std::vector<PollutedObjData> CameraApp::pollutedObjsList()
 {
 	return pollutedObjectsFound;
 }
@@ -80,8 +98,22 @@ const glm::vec2 CameraApp::getRes()
 
 void CameraApp::savePhoto()
 {
-	std::vector<Node*> nodes = checkObjects();
-	pollutedObjectsFound.insert(pollutedObjInScreen.begin(), pollutedObjInScreen.end());
+	if (!largestPollutedObjInScreen && pollutedObjInScreen.size() < 1)
+		return;
+	//checks if node is already photographed
+	for (PollutedObjData pdata : pollutedObjectsFound) {
+		if (pdata.node == largestPollutedObjInScreen)
+			return;
+	}
+
+	PollutedObjData data{ largestPollutedObjInScreen, vrlib::gl::FBO(fboRes.x, fboRes.y, true, 1) };
+
+	data.photo.bind();
+	fbo->use();
+	data.photo.unbind();
+
+	data.photo.saveAsFile("data/Bodemonderzoek/photos/TMP.jpg"); //testcode
+	pollutedObjectsFound.push_back(data);
 	std::string path = "data/Bodemonderzoek/photos/"s + std::to_string(imagecount++) + ".jpg";
 	fbo->saveAsFile(path);
 }

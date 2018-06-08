@@ -19,8 +19,13 @@ public:
 	float treshold;
 	vrlib::tien::components::ModelRenderer *modelRenderer;
 	
-	bool isVisible();
+	/*
+	* Returns the the amount of the object that covers the screen with a value between 0 and 1
+	*/
+	float isVisible();
 	vrlib::tien::Node* OcclusionDraw(glm::mat4 view, glm::mat4 proj);
+
+	OcclusionQuery getQuery();
 
 	VisibilityTester(float tresh, vrlib::tien::components::ModelRenderer* model);
 	VisibilityTester(float tresh, vrlib::tien::components::ModelRenderer* model, CameraApp* camapp);

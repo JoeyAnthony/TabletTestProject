@@ -25,9 +25,18 @@ bool OcclusionQuery::resultsAvailable()
 	return param;
 }
 
-int OcclusionQuery::getResult()
+
+bool OcclusionQuery::getResult()
 {
+	int oldsamples = renderedSamples;
 	glGetQueryObjectiv(queryID, GL_QUERY_RESULT_NO_WAIT, &renderedSamples);
+	if (oldsamples == renderedSamples)
+		return false;
+	return true;
+}
+
+const int OcclusionQuery::lastRenderedSamples()
+{
 	return renderedSamples;
 }
 
