@@ -1,10 +1,16 @@
 #include "stdafx.h"
 
 #include "MapApp.h"
+#include "MainApp.h"
+#include "Tablet.h"
 #include <VrLib\Texture.h>
+#include <VrLib\tien\components\Transform.h>
 
 using namespace glm;
 using namespace vrlib;
+using namespace vrlib::tien;
+using namespace vrlib::tien::components;
+using namespace TabletGraphicsComonents;
 
 MapApp::MapScroll::MapScroll(std::string map, float wordToMapScale, glm::vec2 centerWorld, TabletGraphicsObject* parent) : 
 	TabletGraphicsObject(parent), texture(vrlib::Texture::loadCached(map)), wordToMapScale(wordToMapScale), centerWorld(centerWorld) {
@@ -23,8 +29,17 @@ void MapApp::MapScroll::draw(TabletGraphicsRenderInfo renderInfo) {
 	glDisable(GL_CULL_FACE);
 
 	const auto mapPos = (worldPos - centerWorld) / wordToMapScale + vec2(0.5f,0.5f);
-	const auto xoffset = mapZoom/2;
-	const auto yoffset = (getGeometry().size.y / (float)getGeometry().size.x) * mapZoom/2;
+
+	float mapZoomAdj = 1;
+	if (mapZoom < 0) {
+		mapZoomAdj = pow(2, -mapZoom);
+	}
+	else if (mapZoom > 0) {
+		mapZoomAdj = 1.f / pow(2, mapZoom);
+	}
+
+	const auto xoffset = mapZoomAdj /2;
+	const auto yoffset = (getGeometry().size.y / (float)getGeometry().size.x) * mapZoomAdj /2;
 
 	fontShader->use();
 	fontShader->setUniform(FontUniform::modelMatrix, renderInfo.modelViewMatrix);
@@ -35,19 +50,12 @@ void MapApp::MapScroll::draw(TabletGraphicsRenderInfo renderInfo) {
 
 	ivec2 position = { 0,0 };
 	ivec2 size = getGeometry().size;
-
 	
 	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x, position.y),                   mapPos + glm::vec2(-xoffset, -yoffset)));
 	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x + size.x, position.y),          mapPos + glm::vec2(+xoffset, -yoffset)));
 	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x + size.x, position.y + size.y), mapPos + glm::vec2(+xoffset, +yoffset)));
 	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x, position.y + size.y),          mapPos + glm::vec2(-xoffset, +yoffset)));
-	
-	/*
-	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x, position.y), glm::vec2(0, 0)));
-	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x + size.x, position.y), glm::vec2(1, 0)));
-	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x + size.x, position.y + size.y), glm::vec2(1, 1)));
-	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x, position.y + size.y), glm::vec2(0, 1)));
-	*/
+
 	texture->bind();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	vrlib::gl::setAttributes<vrlib::gl::VertexP2T2>(&verts[0]);
@@ -61,25 +69,42 @@ void MapApp::MapScroll::setWorldPos(glm::vec2 worldPos) {
 	this->worldPos = worldPos;
 }
 
-void MapApp::MapScroll::setMapZoom(float mapZoom) {
-	this->mapZoom = mapZoom;
+void MapApp::MapScroll::zoomIn() {
+	mapZoom = std::min(mapZoom + 1, 5);
 }
 
-MapApp::MapApp() {
+void MapApp::MapScroll::zoomOut() {
+	mapZoom = std::max(mapZoom - 1, -2);
+}
+
+MapApp::MapApp(Node* node) : node(node) {
 	settings[Updateable] = true;
 }
 
 void MapApp::initalize() {
-	baseMap = new MapScroll("data/TienTest/textures/ground_normal.png", 10, { 5,5 }, this);
-	baseMap->setGeometry({ {0,0},{1080,1080} });
-	baseMap->setMapZoom(2);
-	baseMap->setWorldPos({ 2,5 });
+	background = new Square({}, {}, this);
+	background->color = background->hoverColor = { 0.9,0.9,0.9 };
+	background->setGeometry(getGeometry());
+	baseMap = new MapScroll("data/TabletTestProject/Images/WorldMap.png", 20, { 0,0 }, this);
+	baseMap->setGeometry({ {50,50},getGeometry().size - ivec2(100,190) });
+	baseMap->setWorldPos({ 0,0 });
+	cursor = new Square({}, {}, this);
+	cursor->color = cursor->hoverColor = { 1,0,0 };
+	cursor->setGeometry({ {1080 / 2 - 15, (1920 - 190 + 50) / 2 - 15}, {30,30} });
+	mainMenuButton = new Button("Back", [tablet = tablet, &mainApp = mainApp] {tablet->setActiveApp(mainApp); }, this);
+	mainMenuButton->setGeometry({ {50, 1920 - 100},{} });
+	zoomIn = new Button(" +", [&baseMap = baseMap] {baseMap->zoomIn(); }, this);
+	zoomIn->setGeometry({ {1080 - 50 - 60 - 80, 1920 - 100}, {60,60} });
+	zoomOut = new Button(" -", [&baseMap = baseMap] {baseMap->zoomOut(); }, this);
+	zoomOut->setGeometry({ { 1080 - 50 - 60, 1920 - 100 },{ 60,60 } });
 }
 
-float count = 0;
+bool MapApp::linkToApps() {
+	if ((mainApp = tablet->getApp<MainApp>()) == nullptr) return false;
+	return true;
+}
 
 void MapApp::update(float deltaMS) {
-	count += deltaMS;
-
-	baseMap->setMapZoom(1 + sin(count/2) / 2);
+	vec3 pos = node->getComponent<components::Transform>()->position;
+	baseMap->setWorldPos({ pos.x, -pos.z });
 }
