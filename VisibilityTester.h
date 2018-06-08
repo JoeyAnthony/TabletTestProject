@@ -7,7 +7,7 @@
 
 class CameraApp;
 
-class VisibilityTester : public vrlib::tien::components::Renderable
+class VisibilityTester : public vrlib::tien::Component
 {
 private:
 	OcclusionQuery query;
@@ -15,14 +15,12 @@ private:
 	glm::vec3 maxbounds;
 
 public:
+	CameraApp * camApp;
 	float treshold;
 	vrlib::tien::components::ModelRenderer *modelRenderer;
 	
-	bool isVisible(float& onScreenValue);
-	void drawDeferredPass() override {};
-	void drawForwardPass() override;
-	void drawShadowMap() override {};
-	void OcclusionDraw(glm::mat4 view, glm::mat4 proj);
+	bool isVisible();
+	vrlib::tien::Node* OcclusionDraw(glm::mat4 view, glm::mat4 proj);
 
 	VisibilityTester(float tresh, vrlib::tien::components::ModelRenderer* model);
 	VisibilityTester(float tresh, vrlib::tien::components::ModelRenderer* model, CameraApp* camapp);

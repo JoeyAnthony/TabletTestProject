@@ -62,22 +62,33 @@ void TabletStart::loadScene()
 	rightHand->addComponent(hand);
 	rightHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
 
+	
 	Node* leftHand = new Node("LeftHand", &Engine.scene);
 	auto a = [this](const Scene& scene, const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix, Node* cameraNode, int renderId) {this->Engine.renderer.render(scene, projectionMatrix, modelViewMatrix, cameraNode, renderId); };
 	CameraApp* camApp = new CameraApp(leftHand, a);
+	
 	leftHand->addComponent(new components::Transform(glm::vec3(-2, 0, 0)));
 	leftHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
 	Tablet* tablet = new Tablet({ 1080,1920 }, 1, vive.controllers[1].transform, vive.controllers[1].triggerButton, {/*new MainApp(), camApp,*/ new MapApp()});
 	leftHand->addComponent(tablet);
 	//auto mr = new ShadelessMeshRenderer(tablet);
 	//leftHand->addComponent(mr);
-	leftHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
+
+	//leftHand->addComponent(new components::ModelRenderer("data/vrlib/rendermodels/vr_controller_vive_1_5/vr_controller_vive_1_6.obj"));
 
 	Node* testobj = new Node("Testobj", &Engine.scene);
-	testobj->addComponent(new components::Transform(glm::vec3(0, 0, -2)));
+	testobj->addComponent(new components::Transform(glm::vec3(2, 0, -2)));
 	vrlib::tien::components::ModelRenderer* m = new components::ModelRenderer("data/Models/Environment/Building Blocks/Dungeon/wall_1.fbx");
 	testobj->addComponent(m);
-	testobj->addComponent(new VisibilityTester(0.75f, m, camApp));
+	testobj->addComponent(new VisibilityTester(0.15f, m, camApp));
+	testobj->transform->setGlobalRotation(glm::quat({ 0, glm::radians(90.0f), 0 }));
+
+	Node* testobj2 = new Node("Testobj2", &Engine.scene);
+	testobj2->addComponent(new components::Transform(glm::vec3(-2, 0, -2)));
+	vrlib::tien::components::ModelRenderer* m2 = new components::ModelRenderer("data/Models/Environment/Building Blocks/Dungeon/wall_1.fbx");
+	testobj2->addComponent(m2);
+	testobj2->addComponent(new VisibilityTester(0.15f, m, camApp));
+	testobj2->transform->setGlobalRotation(glm::quat({ 0, glm::radians(90.0f), 0 }));
 }
 
 

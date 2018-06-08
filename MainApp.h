@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 
+class CameraApp;
+
 using namespace glm;
 using namespace TabletGraphicsComonents;
 

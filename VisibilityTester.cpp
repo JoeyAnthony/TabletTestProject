@@ -7,20 +7,18 @@
 using namespace vrlib::tien;
 using namespace glm;
 
-bool VisibilityTester::isVisible(float & onScreenValue)
+bool VisibilityTester::isVisible()
 {
-	//max amount of pixels vs zero
-	return false;
+	float amount = (float)query.getResult() / (camApp->getRes().x * camApp->getRes().y);
+	if (amount > treshold)
+		return true;
+	else
+		return false;
 }
 
-void VisibilityTester::drawForwardPass()
+Node* VisibilityTester::OcclusionDraw(glm::mat4 view, glm::mat4 proj)
 {
-
-}
-
-void VisibilityTester::OcclusionDraw(glm::mat4 view, glm::mat4 proj)
-{
-	std::cout<<"pixels: " << query.getResult() << std::endl;
+	//std::cout<<"pixels: " << query.getResult() << std::endl;
 	
 	//render quad
 	glMatrixMode(GL_PROJECTION);
@@ -32,6 +30,7 @@ void VisibilityTester::OcclusionDraw(glm::mat4 view, glm::mat4 proj)
 	glEnable(GL_DEPTH_TEST);
 
 	query.beginQuery();
+	glColorMask(false, false, false, false);
 	glBegin(GL_QUADS);
 	glColor3f(1.0f, 0.4f, 0.4f);
 	//front and back
@@ -68,6 +67,9 @@ void VisibilityTester::OcclusionDraw(glm::mat4 view, glm::mat4 proj)
 	glVertex3fv(glm::value_ptr(vec3(minbounds.x, maxbounds.y, maxbounds.z)));
 	glEnd();
 	query.endQuery();
+	glColorMask(true, true, true, true);
+
+	return node;
 }
 
 /*
@@ -85,6 +87,7 @@ VisibilityTester::VisibilityTester(float tresh, components::ModelRenderer* model
 VisibilityTester::VisibilityTester(float tresh, vrlib::tien::components::ModelRenderer* model, CameraApp* camapp) : VisibilityTester(tresh, model)
 {
 	camapp->addOcclusionObject(this);
+	camApp = camapp;
 }
 
 VisibilityTester::~VisibilityTester()
