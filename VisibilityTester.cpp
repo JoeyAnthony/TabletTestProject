@@ -20,7 +20,7 @@ float VisibilityTester::isVisible()
 Node* VisibilityTester::OcclusionDraw(glm::mat4 view, glm::mat4 proj)
 {
 	query.getResult();
-	std::cout << "renderedsamples: " << query.lastRenderedSamples() << std::endl;
+	//std::cout << "renderedsamples: " << query.lastRenderedSamples() << std::endl;
 
 	//render quad
 	glMatrixMode(GL_PROJECTION);

@@ -31,13 +31,18 @@ private:
 	int imagecount = 0;
 
 	vrlib::gl::FBO* fbo;
-	glm::vec2 fboRes;
+	glm::ivec2 fboRes;
 	float fov = 90.0f;
 
-	TabletGraphicsComonents::FBO* background;
+	TabletGraphicsComonents::Square* background;
+	TabletGraphicsComonents::Button* mainMenuButton;
+	TabletGraphicsComonents::FBO* cameraFeed;
+	TabletGraphicsComonents::Square* feedbackBG;
+	TabletGraphicsComonents::Text* feedback;
+	float feedbackTimer = -1;
+	TabletGraphicsComonents::Button* photoButton;
 
 	std::vector<VisibilityTester*> occlusionObjects;
-	TabletGraphicsComonents::Button* photoButton;
 
 	glm::vec3 camTabletOffset = glm::vec3(0, 0, 0);
 	glm::mat4 perspective;
@@ -46,15 +51,18 @@ private:
 	vrlib::tien::Node* largestPollutedObjInScreen;
 	std::vector<vrlib::tien::Node*> pollutedObjInScreen;
 	std::vector<PollutedObjData> pollutedObjectsFound;
+	MainApp* mainApp;
 
+	void setFeedback(std::string s);
+	bool hasUpdated = false;
 public:
 	vrlib::tien::Node * tabletHand;
-	MainApp* mainApp;
 
 	std::function<void(const vrlib::tien::Scene&, const glm::mat4&, const glm::mat4&, vrlib::tien::Node*, int)> func;
 	
 	void initalize() override;
 	void update(float deltaMS) override;
+	void updateInactive(float deltaMS) override;
 	void checkObjects();
 
 	void addOcclusionObject(vrlib::tien::Node* obj);

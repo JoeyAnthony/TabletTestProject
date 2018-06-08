@@ -30,4 +30,6 @@ public:
 
 	void initalize() override;
 	bool linkToApps() override;
+
+	void updatePhotoProgres(int taken, int total);
 };

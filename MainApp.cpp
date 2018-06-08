@@ -2,6 +2,7 @@
 #include "MainApp.h"
 #include "CameraApp.h"
 #include "MapApp.h"
+#include <sstream>
 
 void MainApp::initalize() {
 	background = new Square({}, {}, this);
@@ -11,7 +12,7 @@ void MainApp::initalize() {
 	title = new Text({}, {}, "Main Screen", "Arial", 100, this);
 	title->setGeometry({ {100, 1920-100-100}, {0,0} });
 
-	counter = new Text({}, {}, "Discrepancies photographed 5 of 23", "Arial", 60, this);
+	counter = new Text({}, {}, "No photos taken", "Arial", 60, this);
 	counter->setGeometry({ {100, 1920 - 200 - 100}, {} });
 
 	buttons.push_back(new Button("Camera App", [tablet = tablet, &camApp = camApp]() {tablet->setActiveApp(camApp); }, this));
@@ -26,4 +27,11 @@ bool MainApp::linkToApps() {
 	if ((mapApp = tablet->getApp<MapApp>()) == nullptr) return false;
 
 	return true;
+}
+
+void MainApp::updatePhotoProgres(int photos, int total) {
+	std::stringstream s;
+	s << "Discrepancies photographed " << photos << " of " << total;
+	counter->text = s.str();
+	counter->setGeometry({ { 100, 1920 - 200 - 100 },{} });
 }
