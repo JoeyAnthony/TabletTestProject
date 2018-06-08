@@ -58,7 +58,6 @@ void CameraApp::update(float deltaMS)
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	feedbackTimer -= deltaMS;
-	std::cout << "timer: " << feedbackTimer << std::endl;
 	if (feedbackTimer < 0 && (feedback->settings[Visable] || feedbackBG->settings[Visable])) {
 		feedback->settings[Visable] = feedbackBG->settings[Visable] = false;
 	}
