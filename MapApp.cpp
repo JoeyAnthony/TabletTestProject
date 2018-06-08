@@ -2,9 +2,13 @@
 
 #include "MapApp.h"
 #include <VrLib\Texture.h>
+#include <VrLib\tien\components\Transform.h>
 
 using namespace glm;
 using namespace vrlib;
+using namespace vrlib::tien;
+using namespace vrlib::tien::components;
+using namespace TabletGraphicsComonents;
 
 MapApp::MapScroll::MapScroll(std::string map, float wordToMapScale, glm::vec2 centerWorld, TabletGraphicsObject* parent) : 
 	TabletGraphicsObject(parent), texture(vrlib::Texture::loadCached(map)), wordToMapScale(wordToMapScale), centerWorld(centerWorld) {
@@ -35,7 +39,6 @@ void MapApp::MapScroll::draw(TabletGraphicsRenderInfo renderInfo) {
 
 	ivec2 position = { 0,0 };
 	ivec2 size = getGeometry().size;
-
 	
 	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x, position.y),                   mapPos + glm::vec2(-xoffset, -yoffset)));
 	verts.push_back(vrlib::gl::VertexP2T2(glm::vec2(position.x + size.x, position.y),          mapPos + glm::vec2(+xoffset, -yoffset)));
@@ -65,15 +68,18 @@ void MapApp::MapScroll::setMapZoom(float mapZoom) {
 	this->mapZoom = mapZoom;
 }
 
-MapApp::MapApp() {
+MapApp::MapApp(Node* node) : node(node) {
 	settings[Updateable] = true;
 }
 
 void MapApp::initalize() {
-	baseMap = new MapScroll("data/TienTest/textures/ground_normal.png", 10, { 5,5 }, this);
+	baseMap = new MapScroll("data/TabletTestProject/Images/WorldMap.png", 20, { 0,0 }, this);
 	baseMap->setGeometry({ {0,0},{1080,1080} });
-	baseMap->setMapZoom(2);
-	baseMap->setWorldPos({ 2,5 });
+	baseMap->setMapZoom(0.5);
+	baseMap->setWorldPos({ 0,0 });
+	cursor = new Square({}, {}, this);
+	cursor->color = cursor->hoverColor = { 1,0,0 };
+	cursor->setGeometry({ {1080 / 2 - 20, 1080 / 2 - 20}, {40,40} });
 }
 
 float count = 0;
@@ -81,5 +87,9 @@ float count = 0;
 void MapApp::update(float deltaMS) {
 	count += deltaMS;
 
-	baseMap->setMapZoom(1 + sin(count/2) / 2);
+	vec3 pos = node->getComponent<components::Transform>()->position;
+	baseMap->setWorldPos({ pos.x, -pos.z });
+
+	//baseMap->setMapZoom(1 + sin(count/2) / 2);
+	//baseMap->setWorldPos({ sin(count / 2) * 100, 0 });
 }

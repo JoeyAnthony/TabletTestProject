@@ -1,5 +1,7 @@
 #include "TabletGraphics.h"
 
+#include <VrLib\tien\Node.h>
+
 class MapApp : public TabletApp {
 	class MapScroll : public TabletGraphicsObject {
 		vrlib::Texture* texture;
@@ -16,9 +18,11 @@ class MapApp : public TabletApp {
 	};
 
 	MapScroll* baseMap;
+	TabletGraphicsComonents::Square* cursor;
+	vrlib::tien::Node* node;
 public:
 
-	MapApp();
+	MapApp(vrlib::tien::Node* node);
 
 	void initalize() override;
 	void update(float delatMS) override;

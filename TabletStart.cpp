@@ -67,7 +67,7 @@ void TabletStart::loadScene()
 	CameraApp* camApp = new CameraApp(leftHand, a);
 	leftHand->addComponent(new components::Transform(glm::vec3(-2, 0, 0)));
 	leftHand->addComponent(new components::TransformAttach(vive.controllers[0].transform));
-	Tablet* tablet = new Tablet({ 1080,1920 }, 1, vive.controllers[1].transform, vive.controllers[1].triggerButton, {/*new MainApp(), camApp,*/ new MapApp()});
+	Tablet* tablet = new Tablet({ 1080,1920 }, 1, vive.controllers[1].transform, vive.controllers[1].triggerButton, {/*new MainApp(), camApp,*/ new MapApp(leftHand)});
 	leftHand->addComponent(tablet);
 	//auto mr = new ShadelessMeshRenderer(tablet);
 	//leftHand->addComponent(mr);
